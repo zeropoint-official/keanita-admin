@@ -13,9 +13,9 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 |---|---|---|
 | ☑ | ME | Scaffold `keanita-admin` repo (Next.js 15, TS, Tailwind, shadcn/ui, supabase-js, git init) |
 | ☑ | ME | Write `PLAN.md` (this file) and `README.md` |
-| ☐ | YOU | Confirm the Supabase project `jwxbhcmytgytbhhamace` is the one to use for production (not a throwaway). If not, create one and give me the new URL + anon key + service-role key. |
-| ☐ | YOU | Tell me what is currently in that DB (run in Supabase SQL editor: `select table_name from information_schema.tables where table_schema='public'`) — direct DB access is blocked from my side. Or: run `supabase login` + `supabase link --project-ref jwxbhcmytgytbhhamace` in `keanita-admin/` so I can push migrations with the CLI. |
-| ☐ | YOU | Create `keanita-admin/.env.local` from `.env.example` (anon key + service-role key from Supabase → Project Settings → API). |
+| ☑ | YOU | Confirm the Supabase project `jwxbhcmytgytbhhamace` is the one to use for production (not a throwaway). If not, create one and give me the new URL + anon key + service-role key. |
+| ☑ | YOU | Tell me what is currently in that DB (run in Supabase SQL editor: `select table_name from information_schema.tables where table_schema='public'`) — direct DB access is blocked from my side. Or: run `supabase login` + `supabase link --project-ref jwxbhcmytgytbhhamace` in `keanita-admin/` so I can push migrations with the CLI. |
+| ☑ | YOU | Create `keanita-admin/.env.local` from `.env.example` (anon key + service-role key from Supabase → Project Settings → API). |
 
 ## Phase 1 — Database schema (source of truth for app + dashboard)
 
@@ -29,7 +29,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | `0006_storage.sql`: buckets `events`, `products`, `stores`, `activities`, `characters`, `sliders`, `avatars` + policies |
 | ☑ | ME | `0007_automation.sql`: pg_cron jobs — kid expiry at 11, point expiry at 12 months, birthday + event-reminder triggers (enqueue into `push_campaigns`) |
 | ☑ | ME | `supabase/seed.sql`: seed from the app's mock data (products, characters, stores, activities, gifts, reward rules, settings) so the dashboard isn't empty |
-| ☐ | YOU | Apply migrations: `supabase db push` (after link) or paste each file into the SQL editor. Tell me if anything errors. |
+| ☑ | YOU | Apply migrations: `supabase db push` (after link) or paste each file into the SQL editor. Tell me if anything errors. |
 | ☐ | YOU | Decide: (a) keep manual kid approval + age-11 expiry from the old app, or auto-approve? (b) KP point values per action (I'll seed sensible defaults you can edit in Settings later). |
 
 ## Phase 2 — Dashboard core
@@ -38,7 +38,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 |---|---|---|
 | ☑ | ME | Auth: staff login (email/password via Supabase Auth), middleware guarding `/(dashboard)`, role check against `staff` table |
 | ☑ | ME | App shell: sidebar nav, header, toasts, data-table component, image-upload component (Supabase Storage), rich-text/markdown editor, color picker |
-| ☐ | ME | Typed Supabase client (generated `database.types.ts`) + server actions pattern for privileged writes |
+| ☑ | ME | Typed Supabase client (generated `database.types.ts`) + server actions pattern for privileged writes |
 | ☐ | ME | **Overview** page: member counts, pending approvals, upcoming events, KP issued/spent, pending redemptions, birthdays next 7 days |
 | ☐ | YOU | Create the first staff user: sign up in Supabase Auth dashboard (Authentication → Users → Add user) with your email, then run the SQL I'll give you to insert into `staff` as `admin`. |
 
