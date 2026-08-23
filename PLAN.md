@@ -28,7 +28,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | `0005_rls.sql`: RLS on every table — public read for published content; users read/write only their own rows; `staff` full access by role |
 | ☑ | ME | `0006_storage.sql`: buckets `events`, `products`, `stores`, `activities`, `characters`, `sliders`, `avatars` + policies |
 | ☑ | ME | `0007_automation.sql`: pg_cron jobs — kid expiry at 11, point expiry at 12 months, birthday + event-reminder triggers (enqueue into `push_campaigns`) |
-| ☑ | ME | `supabase/seed.sql`: seed from the app's mock data (products, characters, stores, activities, gifts, reward rules, settings) so the dashboard isn't empty |
+| ☑ | ME | `scripts/seed.mjs`: seed from the app's mock data (products, characters, stores, activities, gifts, reward rules, settings) so the dashboard isn't empty |
 | ☑ | YOU | Apply migrations: `supabase db push` (after link) or paste each file into the SQL editor. Tell me if anything errors. |
 | ☐ | YOU | Decide: (a) keep manual kid approval + age-11 expiry from the old app, or auto-approve? (b) KP point values per action (I'll seed sensible defaults you can edit in Settings later). |
 
@@ -40,7 +40,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | App shell: sidebar nav, header, toasts, data-table component, image-upload component (Supabase Storage), rich-text/markdown editor, color picker |
 | ☑ | ME | Typed Supabase client (generated `database.types.ts`) + server actions pattern for privileged writes |
 | ☐ | ME | **Overview** page: member counts, pending approvals, upcoming events, KP issued/spent, pending redemptions, birthdays next 7 days |
-| ☐ | YOU | Create the first staff user: sign up in Supabase Auth dashboard (Authentication → Users → Add user) with your email, then run the SQL I'll give you to insert into `staff` as `admin`. |
+| ☑ | YOU | Create the first staff user: sign up in Supabase Auth dashboard (Authentication → Users → Add user) with your email, then run the SQL I'll give you to insert into `staff` as `admin`. |
 
 ## Phase 3 — Content sections (parity with old admin)
 

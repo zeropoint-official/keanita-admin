@@ -20,12 +20,16 @@ Migrations live in `supabase/migrations/` (apply in order), seed data in `supaba
 supabase login
 supabase link --project-ref jwxbhcmytgytbhhamace
 npm run db:push              # apply migrations
-supabase db query < supabase/seed.sql     # or paste into SQL editor
+node --env-file=.env.local scripts/seed.mjs        # seed content from the RN mock data
 npm run db:types             # regenerate src/lib/database.types.ts
 node --env-file=.env.local scripts/upload-media.mjs   # push app images into Storage
 ```
 
-Then create your staff login: Supabase → Authentication → Users → *Add user*, and run `supabase/make-admin.sql`.
+Then create your staff login:
+
+```bash
+node --env-file=.env.local scripts/create-staff.mjs you@example.com 'password' admin "Your Name"
+```
 
 ## Layout
 
@@ -33,4 +37,4 @@ Then create your staff login: Supabase → Authentication → Users → *Add use
 - `src/app/(dashboard)/*` — one folder per sidebar section (`src/components/layout/nav.ts`)
 - `src/lib/supabase/{client,server,admin}.ts` — browser / SSR / service-role clients
 - `src/lib/auth.ts` — `requireStaff(role)` guard
-- `scripts/gen-seed.mjs` — regenerates `seed.sql` from the RN app's mock data
+- `scripts/seed.mjs` — seeds content from the RN app mock data; `scripts/create-staff.mjs` — add dashboard users
