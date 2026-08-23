@@ -32,9 +32,8 @@ create policy "rules_read"  on reward_rules for select using (true);
 create policy "rules_admin" on reward_rules for all using (is_staff('admin')) with check (is_staff('admin'));
 
 -- profiles
+-- profiles: "profiles_select_own" / "profiles_update_own" already exist from the auth migration; add staff access
 alter table profiles enable row level security;
-create policy "profiles_own"   on profiles for select using (id = auth.uid() or is_staff());
-create policy "profiles_own_update" on profiles for update using (id = auth.uid()) with check (id = auth.uid());
 create policy "profiles_staff" on profiles for all using (is_staff('editor')) with check (is_staff('editor'));
 
 -- kids: parents manage their own (but cannot set status/member_id — enforced by trigger below)

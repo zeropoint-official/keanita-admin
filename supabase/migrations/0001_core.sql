@@ -13,34 +13,41 @@ create type content_status  as enum ('draft','published','archived');
 create or replace function set_updated_at() returns trigger language plpgsql as $$
 begin new.updated_at = now(); return new; end $$;
 
--- ---------- profiles (parents) — 1:1 with auth.users ----------
-create table profiles (
-  id              uuid primary key references auth.users(id) on delete cascade,
-  first_name      text,
-  last_name       text,
-  mobile          text unique,
-  email           text,
-  district        text,
-  area            text,
-  city            text,
-  language        text not null default 'el',
-  avatar_url      text,
-  is_active       boolean not null default true,
-  old_import_id   integer,            -- id in the old MySQL `users` table
-  last_seen_at    timestamptz,
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
+-- ---------- profiles (parents) — ALREADY EXISTS (created by nextjs-sample/migration/profiles_schema.sql,
+-- holds ~7,961 imported accounts: id, legacy_id, firstname, lastname, mobile, dob, created_at). Extend it. ----------
+create table if not exists profiles (
+  id          uuid primary key references auth.users(id) on delete cascade,
+  legacy_id   bigint unique,
+  firstname   text,
+  lastname    text,
+  mobile      text,
+  dob         date,
+  created_at  timestamptz default now()
 );
+alter table profiles
+  add column if not exists email        text,
+  add column if not exists district     text,
+  add column if not exists area         text,
+  add column if not exists city         text,
+  add column if not exists language     text not null default 'el',
+  add column if not exists avatar_url   text,
+  add column if not exists is_active    boolean not null default true,
+  add column if not exists last_seen_at timestamptz,
+  add column if not exists updated_at   timestamptz not null default now();
+create index if not exists profiles_mobile_idx on profiles(mobile);
+-- backfill email from auth.users
+update profiles p set email = u.email from auth.users u where u.id = p.id and p.email is null;
 create trigger profiles_updated before update on profiles for each row execute function set_updated_at();
 
 -- auto-create profile on signup
 create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into profiles (id, email, first_name, last_name)
+  insert into profiles (id, email, firstname, lastname)
   values (new.id, new.email, new.raw_user_meta_data->>'firstname', new.raw_user_meta_data->>'lastname')
   on conflict (id) do nothing;
   return new;
 end $$;
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute function handle_new_user();
 
 -- ---------- kids ----------

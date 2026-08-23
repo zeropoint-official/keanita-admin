@@ -106,6 +106,9 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 
 ---
 
+## Important: existing data in the Supabase project
+`public.profiles` was created earlier by `nextjs-sample/migration/profiles_schema.sql` and holds the **~7,961 imported parent accounts** (with bcrypt passwords in `auth.users`). Column names there are `firstname`/`lastname`/`legacy_id` — migrations extend that table, never recreate it. Kids (10,972 in the old dump) are not imported yet (Phase 4).
+
 ## Decisions already made
 - Separate repo `keanita-admin/` (not inside `keanita-web`). Staff auth is email/password; parents keep the app's email/password login.
 - Content CRUD goes through RLS with the staff session; privileged ops (KP adjust, redemptions, sends) go through server actions with the service-role key.
