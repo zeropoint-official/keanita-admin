@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Keanita Admin
 
-## Getting Started
+Staff dashboard for the Keanita Kids Club app. Next.js 16 · shadcn/ui · Supabase · Vercel.
 
-First, run the development server:
+See **[PLAN.md](PLAN.md)** for the full build plan and who does what.
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local   # fill in the Supabase keys
+npm install
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Database
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Migrations live in `supabase/migrations/` (apply in order), seed data in `supabase/seed.sql`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+supabase login
+supabase link --project-ref jwxbhcmytgytbhhamace
+npm run db:push              # apply migrations
+supabase db query < supabase/seed.sql     # or paste into SQL editor
+npm run db:types             # regenerate src/lib/database.types.ts
+node --env-file=.env.local scripts/upload-media.mjs   # push app images into Storage
+```
 
-## Learn More
+Then create your staff login: Supabase → Authentication → Users → *Add user*, and run `supabase/make-admin.sql`.
 
-To learn more about Next.js, take a look at the following resources:
+## Layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/(auth)/login` — staff login
+- `src/app/(dashboard)/*` — one folder per sidebar section (`src/components/layout/nav.ts`)
+- `src/lib/supabase/{client,server,admin}.ts` — browser / SSR / service-role clients
+- `src/lib/auth.ts` — `requireStaff(role)` guard
+- `scripts/gen-seed.mjs` — regenerates `seed.sql` from the RN app's mock data
