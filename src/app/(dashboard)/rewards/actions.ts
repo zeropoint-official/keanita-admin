@@ -4,8 +4,7 @@ import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 import type { Database } from '@/lib/database.types';
 
-export type PointsReason = Database['public']['Enums']['points_reason'];
-export const POINTS_REASONS = ['daily_login', 'streak_bonus', 'game', 'event_rsvp', 'profile_complete', 'qr_scan', 'gift_redeem', 'refund', 'manual', 'birthday', 'expiry'] as const;
+import { POINTS_REASONS } from './constants';
 
 const ruleSchema = z.object({
   key: z.enum(POINTS_REASONS),

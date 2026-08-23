@@ -39,20 +39,20 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | Auth: staff login (email/password via Supabase Auth), middleware guarding `/(dashboard)`, role check against `staff` table |
 | ☑ | ME | App shell: sidebar nav, header, toasts, data-table component, image-upload component (Supabase Storage), rich-text/markdown editor, color picker |
 | ☑ | ME | Typed Supabase client (generated `database.types.ts`) + server actions pattern for privileged writes |
-| ☐ | ME | **Overview** page: member counts, pending approvals, upcoming events, KP issued/spent, pending redemptions, birthdays next 7 days |
+| ☑ | ME | **Overview** page: member counts, pending approvals, upcoming events, KP issued/spent, pending redemptions, birthdays next 7 days |
 | ☑ | YOU | Create the first staff user: sign up in Supabase Auth dashboard (Authentication → Users → Add user) with your email, then run the SQL I'll give you to insert into `staff` as `admin`. |
 
 ## Phase 3 — Content sections (parity with old admin)
 
 | | Who | Task |
 |---|---|---|
-| ☐ | ME | **Events & Seminars**: list/create/edit, type, image, highlights, show-on-home, hero-slider, push targeting (date + age range), registrations tab + CSV export + check-in |
-| ☐ | ME | **Home screen**: hero slider CRUD with ordering + scheduling + deep link; quick-action tile toggles; product chips |
-| ☐ | ME | **Products**: CRUD with highlights, ingredients, nutrition table, colors, ordering |
-| ☐ | ME | **Stores & Discounts**: store CRUD, multiple discounts per store, categories, logo upload |
-| ☐ | ME | **Activities**: puzzles + DIY PDFs — image + PDF upload, category, publish toggle |
-| ☐ | ME | **Characters**: edit the 5 profiles |
-| ☐ | ME | **Pages & Settings**: Terms, About/story, contact info, social links, emergency number, membership tier labels, birthday/intro video, force-update version |
+| ☑ | ME | **Events & Seminars**: list/create/edit, type, image, highlights, show-on-home, hero-slider, push targeting (date + age range), registrations tab + CSV export + check-in |
+| ☑ | ME | **Home screen**: hero slider CRUD with ordering + scheduling + deep link; quick-action tile toggles; product chips |
+| ☑ | ME | **Products**: CRUD with highlights, ingredients, nutrition table, colors, ordering |
+| ☑ | ME | **Stores & Discounts**: store CRUD, multiple discounts per store, categories, logo upload |
+| ☑ | ME | **Activities**: puzzles + DIY PDFs — image + PDF upload, category, publish toggle |
+| ☑ | ME | **Characters**: edit the 5 profiles |
+| ☑ | ME | **Pages & Settings**: Terms, About/story, contact info, social links, emergency number, membership tier labels, birthday/intro video, force-update version |
 | ☐ | YOU | Supply any missing media: original product PNGs, character art, brand assets in high-res (current ones are copied from the old app / mock). |
 | ☐ | YOU | Give me the old-app media folder (or confirm evenziademo3.com stays up) so I can migrate the 63MB of PDFs into Storage. |
 
@@ -60,9 +60,9 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 
 | | Who | Task |
 |---|---|---|
-| ☐ | ME | **Members**: parent list with search (name/mobile/email), detail page (kids, KP, registrations, notifications, devices), deactivate |
-| ☐ | ME | **Kids**: approve / reject with reason / expire; queues Pending, Rejected, Expiring soon; CSV export; birthday export |
-| ☐ | ME | Manual KP adjustment with note (writes to ledger, audit-logged) |
+| ☑ | ME | **Members**: parent list with search (name/mobile/email), detail page (kids, KP, registrations, notifications, devices), deactivate |
+| ☑ | ME | **Kids**: approve / reject with reason / expire; queues Pending, Rejected, Expiring soon; CSV export; birthday export |
+| ☑ | ME | Manual KP adjustment with note (writes to ledger, audit-logged) |
 | ☐ | YOU | Fresh production DB dump + media from the agency (see KEANITA-PROJECT-GUIDE checklist). Until then we work with the 2022 test dump. |
 | ☐ | ME | Import script: old MySQL users/kids/registrations/stores → Supabase (bcrypt hashes carried over) |
 
@@ -70,20 +70,20 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 
 | | Who | Task |
 |---|---|---|
-| ☐ | ME | **Reward rules**: editable point values (daily login, streak tiers, game per-fruit + daily cap, event RSVP, profile completion, QR scan), point expiry months |
-| ☐ | ME | **Gift catalog**: CRUD, cost, digital/physical, stock, requires-approval, active |
-| ☐ | ME | **Redemptions** queue: approve / ship / reject (auto-refund KP) |
-| ☐ | ME | **QR codes**: generate batches (CSV/PDF export), view scans |
-| ☐ | ME | Leaderboard view |
+| ☑ | ME | **Reward rules**: editable point values (daily login, streak tiers, game per-fruit + daily cap, event RSVP, profile completion, QR scan), point expiry months |
+| ☑ | ME | **Gift catalog**: CRUD, cost, digital/physical, stock, requires-approval, active |
+| ☑ | ME | **Redemptions** queue: approve / ship / reject (auto-refund KP) |
+| ☑ | ME | **QR codes**: generate batches (CSV/PDF export), view scans |
+| ☑ | ME | Leaderboard view |
 | ☐ | YOU | Decide how physical gifts are fulfilled (pickup at KEAN / courier / at events) and whether QR-on-packaging will actually happen. |
 
 ## Phase 6 — Push notifications
 
 | | Who | Task |
 |---|---|---|
-| ☐ | ME | **Campaigns**: compose (title, body, type, deep link), audience (all / district / kid age range / membership status / test device), send now or schedule, history with delivered/opened |
+| ☑ | ME | **Campaigns**: compose (title, body, type, deep link), audience (all / district / kid age range / membership status / test device), send now or schedule, history with delivered/opened |
 | ☐ | ME | Edge Function `send-push` (Expo Push API) + cron dispatcher for scheduled campaigns, birthday wishes, event reminders |
-| ☐ | ME | Automation settings UI: birthday text (GR/EN), optional KP gift, reminder lead time |
+| ☑ | ME | Automation settings UI: birthday text (GR/EN), optional KP gift, reminder lead time |
 | ☐ | YOU | Expo account access token (expo.dev → Access tokens) → Supabase Edge Function secret `EXPO_ACCESS_TOKEN`. For production iOS/Android push also need the app's EAS project set up (already part of the RN work). |
 
 ## Phase 7 — Wire the RN app to the same DB

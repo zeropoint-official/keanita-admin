@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PairListEditor } from '@/components/shared/list-editor';
-import { saveRules, POINTS_REASONS, type PointsReason } from './actions';
+import { saveRules } from './actions';
+import { POINTS_REASONS, type PointsReason } from './constants';
 
 export interface Rule { key: PointsReason; label: string; points: number; daily_cap: number | null; is_active: boolean; config: Record<string, unknown> }
 
