@@ -9,7 +9,7 @@ import { SourceBadge } from '../campaigns-table';
 import { audienceSummary } from '../campaign-utils';
 import { CampaignActions } from './campaign-actions';
 import type { Audience, CampaignInput } from '../actions';
-import { loadLinkOptions } from '../new/page';
+import { loadLinkOptions } from '../link-options';
 
 const toLocalInput = (iso: string | null) => {
   if (!iso) return null;
