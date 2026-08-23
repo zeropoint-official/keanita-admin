@@ -31,7 +31,7 @@ export const campaignSchema = z.object({
 export type CampaignInput = z.input<typeof campaignSchema>;
 
 /** Builds the JSON audience filter stored in push_campaigns.audience. */
-export async function buildAudience(v: z.infer<typeof campaignSchema>, staffId: string): Promise<Audience> {
+async function buildAudience(v: z.infer<typeof campaignSchema>, staffId: string): Promise<Audience> {
   if (v.audience_mode === 'test') return { user_ids: [staffId] };
   if (v.audience_mode === 'all') return { all: true };
   const districts = v.districts.split(',').map((s) => s.trim()).filter(Boolean);

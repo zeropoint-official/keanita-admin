@@ -11,7 +11,7 @@ import { DevicesStats } from './devices-stats';
 export default async function NotificationsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab } = await searchParams;
   const supabase = await createClient();
-  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const since = new Date(); since.setDate(since.getDate() - 30);
   const [{ data: campaigns }, { data: messages }, { count: tokensTotal }, { count: tokensIos }, { count: tokensAndroid }, { count: tokensWeb }, { count: tokensRecent }] = await Promise.all([
     supabase.from('push_campaigns').select('id, title, type, source, audience, scheduled_at, sent_at, status, stats, created_at').order('created_at', { ascending: false }).limit(500),
     supabase.from('contact_messages').select('id, name, email, subject, message, status, created_at, user_id').order('created_at', { ascending: false }).limit(500),
@@ -19,7 +19,7 @@ export default async function NotificationsPage({ searchParams }: { searchParams
     supabase.from('device_tokens').select('token', { count: 'exact', head: true }).eq('platform', 'ios'),
     supabase.from('device_tokens').select('token', { count: 'exact', head: true }).eq('platform', 'android'),
     supabase.from('device_tokens').select('token', { count: 'exact', head: true }).eq('platform', 'web'),
-    supabase.from('device_tokens').select('token', { count: 'exact', head: true }).gte('last_seen_at', since),
+    supabase.from('device_tokens').select('token', { count: 'exact', head: true }).gte('last_seen_at', since.toISOString()),
   ]);
 
   const rows: CampaignRow[] = (campaigns ?? []).map((c) => {

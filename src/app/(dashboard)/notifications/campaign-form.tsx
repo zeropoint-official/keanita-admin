@@ -42,19 +42,20 @@ export function CampaignForm({ id, initial, readOnly = false, events, products }
 
   // live audience estimate (debounced)
   useEffect(() => {
-    if (w.audience_mode === 'test') { setEstimate(1); return; }
+    const isTest = w.audience_mode === 'test';
     const a: Audience = w.audience_mode === 'all' ? { all: true } : {
       kid_min_age: w.kid_min_age === null || w.kid_min_age === undefined || w.kid_min_age === ('' as never) ? null : Number(w.kid_min_age),
       kid_max_age: w.kid_max_age === null || w.kid_max_age === undefined || w.kid_max_age === ('' as never) ? null : Number(w.kid_max_age),
       kid_status: (w.kid_status as Audience['kid_status']) ?? 'any',
       districts: (w.districts ?? '').split(',').map((s) => s.trim()).filter(Boolean),
     };
-    setEstimating(true);
     const t = setTimeout(async () => {
+      if (isTest) { setEstimate(1); setEstimating(false); return; }
+      setEstimating(true);
       const r = await estimateAudience(a);
       setEstimate(r.ok ? (r.data ?? 0) : null);
       setEstimating(false);
-    }, 400);
+    }, isTest ? 0 : 400);
     return () => clearTimeout(t);
   }, [w.audience_mode, w.kid_min_age, w.kid_max_age, w.kid_status, w.districts]);
 
