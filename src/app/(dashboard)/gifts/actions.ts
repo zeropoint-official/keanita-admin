@@ -44,23 +44,18 @@ export async function setRedemptionStatus(id: string, status: RedemptionStatus, 
   return staffAction({
     action: `redemptions.${status}`, entity: 'redemptions', entityId: id, payload: { status, note: note ?? null }, revalidate: ['/gifts', '/'],
     fn: async (db, staffId) => {
-      const { data: r, error } = await db.from('redemptions').select('id, user_id, kid_id, gift_id, cost, status, gifts(name, stock)').eq('id', id).single();
-      if (error) throw error;
-      if (r.status === 'rejected' || r.status === 'cancelled') throw new Error('Η εξαργύρωση έχει ήδη κλείσει');
-      const now = new Date().toISOString();
-      const { error: e1 } = await db.from('redemptions').update({ status, note: note?.trim() || null, handled_by: staffId, handled_at: now }).eq('id', id);
-      if (e1) throw e1;
       if (status === 'rejected') {
-        const gift = r.gifts as unknown as { name: string; stock: number | null } | null;
-        const { error: e2 } = await db.from('points_ledger').insert({
-          user_id: r.user_id, kid_id: r.kid_id, amount: r.cost, reason: 'refund', label: `Επιστροφή: ${gift?.name ?? 'δώρο'}`, ref_id: r.id, created_by: staffId,
-        });
-        if (e2) throw e2;
-        if (gift && gift.stock != null) {
-          const { error: e3 } = await db.from('gifts').update({ stock: gift.stock + 1 }).eq('id', r.gift_id);
-          if (e3) throw e3;
-        }
+        // transactional + idempotent: refund and stock restore happen atomically in SQL
+        const { data: ok, error } = await db.rpc('reject_redemption', { p_redemption: id, p_note: note?.trim() || '', p_staff: staffId });
+        if (error) throw error;
+        if (!ok) throw new Error('Η εξαργύρωση έχει ήδη κλείσει');
+        return;
       }
+      const { data: updated, error } = await db.from('redemptions')
+        .update({ status, note: note?.trim() || null, handled_by: staffId, handled_at: new Date().toISOString() })
+        .eq('id', id).not('status', 'in', '("rejected","cancelled")').select('id');
+      if (error) throw error;
+      if (!updated?.length) throw new Error('Η εξαργύρωση έχει ήδη κλείσει');
     },
   });
 }

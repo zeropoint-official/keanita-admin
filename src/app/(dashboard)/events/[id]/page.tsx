@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { fmtDate } from '@/lib/format';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EventForm } from '../event-form';
 import { EventActions } from './event-actions';
@@ -25,7 +26,7 @@ export default async function EventDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div>
-      <PageHeader title={event.title} description={`${event.date} · ${event.location ?? ''}`}>
+      <PageHeader title={event.title} description={`${fmtDate(event.date)} · ${event.location ?? ''}`}>
         <StatusBadge value={event.status} />
         <EventActions id={id} status={event.status} />
       </PageHeader>

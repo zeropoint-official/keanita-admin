@@ -22,8 +22,8 @@ export function RegistrationsTable({ rows, eventTitle }: { rows: Reg[]; eventTit
       `${r.kid?.first_name ?? ''} ${r.kid?.last_name ?? ''}`.trim(), ageOf(r.kid?.dob) ?? '', r.kid?.member_id ?? '',
       `${r.parent?.firstname ?? ''} ${r.parent?.lastname ?? ''}`.trim(), r.parent?.mobile ?? '', r.parent?.email ?? '',
       fmtDateTime(r.created_at), r.checked_in_at ? 'Ναι' : 'Όχι',
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
-    const blob = new Blob(['﻿' + [head.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+    const blob = new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `${eventTitle}-συμμετοχές.csv` });
     a.click();
   };

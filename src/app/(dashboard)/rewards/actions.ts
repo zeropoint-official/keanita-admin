@@ -66,7 +66,7 @@ export async function createQrBatch(input: BatchInput) {
 /** Returns all codes of a batch (used for CSV export). Viewer role suffices. */
 export async function fetchQrBatchCodes(batch: string) {
   return staffAction({
-    role: 'viewer', action: 'rewards.qr.export', entity: 'qr_codes', entityId: batch, revalidate: [],
+    role: 'editor', action: 'rewards.qr.export', entity: 'qr_codes', entityId: batch, revalidate: [],
     fn: async (db) => {
       const out: { code: string; uses: number; max_uses: number }[] = [];
       for (let from = 0; ; from += 1000) {

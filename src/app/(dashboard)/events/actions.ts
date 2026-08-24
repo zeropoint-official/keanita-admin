@@ -14,13 +14,13 @@ export const eventSchema = z.object({
   bg_color: z.string().default('#FFF0EE'),
   highlights: z.array(z.object({ emoji: z.string(), label: z.string() })).default([]),
   rsvp_points: z.coerce.number().int().min(0).default(10),
-  capacity: z.coerce.number().int().positive().nullable().default(null),
+  capacity: z.preprocess((v) => (v === '' || v == null ? null : v), z.coerce.number().int().positive().nullable()).default(null),
   show_on_home: z.boolean().default(true),
   show_call_button: z.boolean().default(false),
   allow_registration: z.boolean().default(true),
   notify_on: z.string().nullable().default(null),
-  notify_min_age: z.coerce.number().int().min(0).max(18).nullable().default(null),
-  notify_max_age: z.coerce.number().int().min(0).max(18).nullable().default(null),
+  notify_min_age: z.preprocess((v) => (v === '' || v == null ? null : v), z.coerce.number().int().min(0).max(18).nullable()).default(null),
+  notify_max_age: z.preprocess((v) => (v === '' || v == null ? null : v), z.coerce.number().int().min(0).max(18).nullable()).default(null),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
 });
 export type EventInput = z.input<typeof eventSchema>;

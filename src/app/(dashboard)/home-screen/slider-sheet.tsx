@@ -1,4 +1,5 @@
 'use client';
+import { isoToLocalInput } from '@/lib/format';
 import { useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -26,12 +27,6 @@ const DEFAULTS: SliderInput = {
 };
 
 /** ISO → value for <input type="datetime-local"> in local time. */
-const toLocal = (iso: string | null) => {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-};
 
 const NONE = '__none__';
 
@@ -46,7 +41,7 @@ export function SliderSheet({ open, onClose, slider, events, products }: { open:
     reset(slider ? {
       title: slider.title, subtitle: slider.subtitle ?? '', image_url: slider.image_url, accent_color: slider.accent_color, bg_color: slider.bg_color,
       link_type: (slider.link_type as SliderInput['link_type']) ?? null, link_target: slider.link_target ?? '',
-      starts_at: toLocal(slider.starts_at), ends_at: toLocal(slider.ends_at), status: slider.status,
+      starts_at: isoToLocalInput(slider.starts_at), ends_at: isoToLocalInput(slider.ends_at), status: slider.status,
     } : DEFAULTS);
   }, [open, slider, reset]);
 

@@ -1,13 +1,14 @@
 'use server';
 import { z } from 'zod';
+import { localInputToIso } from '@/lib/format';
 import { staffAction, type ActionResult } from '@/lib/actions';
 import { requireStaff } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const audienceSchema = z.object({
   all: z.boolean().optional(),
-  kid_min_age: z.coerce.number().int().min(0).max(18).nullable().optional(),
-  kid_max_age: z.coerce.number().int().min(0).max(18).nullable().optional(),
+  kid_min_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().optional()),
+  kid_max_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().optional()),
   kid_status: z.enum(['approved', 'pending', 'any']).nullable().optional(),
   districts: z.array(z.string()).optional(),
   user_ids: z.array(z.string()).optional(),
@@ -21,8 +22,8 @@ export const campaignSchema = z.object({
   link_type: z.enum(['none', 'event', 'product', 'screen', 'url']).default('none'),
   link_target: z.string().nullable().default(null),
   audience_mode: z.enum(['all', 'targeted', 'test']).default('all'),
-  kid_min_age: z.coerce.number().int().min(0).max(18).nullable().default(null),
-  kid_max_age: z.coerce.number().int().min(0).max(18).nullable().default(null),
+  kid_min_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().default(null)),
+  kid_max_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().default(null)),
   kid_status: z.enum(['approved', 'pending', 'any']).default('any'),
   districts: z.string().default(''),
   schedule_mode: z.enum(['now', 'later']).default('now'),
@@ -62,7 +63,7 @@ export async function saveCampaign(id: string | null, input: CampaignInput, mode
     revalidate: ['/notifications'],
     fn: async (db, staffId) => {
       const audience = await buildAudience(v, staffId);
-      const scheduled_at = mode === 'schedule' ? (v.schedule_mode === 'now' ? new Date().toISOString() : new Date(v.scheduled_at!).toISOString()) : (v.scheduled_at ? new Date(v.scheduled_at).toISOString() : null);
+      const scheduled_at = mode === 'schedule' ? (v.schedule_mode === 'now' ? new Date().toISOString() : localInputToIso(v.scheduled_at!)) : (v.scheduled_at ? localInputToIso(v.scheduled_at) : null);
       const values = {
         title: v.title, body: v.body, type: v.type,
         link_type: v.link_type === 'none' ? null : v.link_type,
@@ -71,13 +72,14 @@ export async function saveCampaign(id: string | null, input: CampaignInput, mode
         status: (mode === 'schedule' ? 'scheduled' : 'draft') as 'scheduled' | 'draft',
       };
       if (id) {
-        const { data: existing } = await db.from('push_campaigns').select('status').eq('id', id).single();
-        if (existing && !['draft', 'scheduled', 'cancelled', 'failed'].includes(existing.status)) throw new Error('Η καμπάνια έχει ήδη σταλεί και δεν επεξεργάζεται');
+        // guard against the dispatcher claiming the campaign mid-edit (would cause a double send)
+        const { data: updated, error } = await db.from('push_campaigns').update(values)
+          .eq('id', id).in('status', ['draft', 'scheduled', 'cancelled', 'failed']).select('id');
+        if (error) throw error;
+        if (!updated?.length) throw new Error('Η καμπάνια στέλνεται ή έχει ήδη σταλεί και δεν επεξεργάζεται');
+        return id;
       }
-      const q = id
-        ? db.from('push_campaigns').update(values).eq('id', id)
-        : db.from('push_campaigns').insert({ ...values, created_by: staffId, source: 'manual' });
-      const { data, error } = await q.select('id').single();
+      const { data, error } = await db.from('push_campaigns').insert({ ...values, created_by: staffId, source: 'manual' }).select('id').single();
       if (error) throw error;
       return data.id as string;
     },
@@ -111,15 +113,31 @@ export async function estimateAudience(audience: Audience): Promise<ActionResult
       // age >= min  => dob <= today - min years ; age <= max => dob > today - (max+1) years
       if (a.kid_min_age != null) { const d = new Date(today); d.setFullYear(d.getFullYear() - a.kid_min_age); kq = kq.lte('dob', d.toISOString().slice(0, 10)); }
       if (a.kid_max_age != null) { const d = new Date(today); d.setFullYear(d.getFullYear() - a.kid_max_age - 1); kq = kq.gt('dob', d.toISOString().slice(0, 10)); }
-      const { data: kids, error } = await kq;
-      if (error) throw error;
-      parentIds = Array.from(new Set((kids ?? []).map((k) => k.parent_id)));
+      const kids: { parent_id: string }[] = [];
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await kq.range(from, from + 999);
+        if (error) throw error;
+        kids.push(...(data ?? []));
+        if (!data || data.length < 1000) break;
+      }
+      parentIds = Array.from(new Set(kids.map((k) => k.parent_id)));
       if (!parentIds.length) return { ok: true, data: 0 };
     }
 
+    if (parentIds) {
+      // chunk the id filter to stay under URL limits
+      let total = 0;
+      for (let i = 0; i < parentIds.length; i += 200) {
+        let pq = db.from('profiles').select('id', { count: 'exact', head: true }).eq('is_active', true).in('id', parentIds.slice(i, i + 200));
+        if (a.districts?.length) pq = pq.in('district', a.districts);
+        const { count, error } = await pq;
+        if (error) throw error;
+        total += count ?? 0;
+      }
+      return { ok: true, data: total };
+    }
     let pq = db.from('profiles').select('id', { count: 'exact', head: true }).eq('is_active', true);
     if (a.districts?.length) pq = pq.in('district', a.districts);
-    if (parentIds) pq = pq.in('id', parentIds);
     const { count, error } = await pq;
     if (error) throw error;
     return { ok: true, data: count ?? 0 };

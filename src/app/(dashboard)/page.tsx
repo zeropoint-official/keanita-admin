@@ -3,13 +3,13 @@ import { Users, Baby, CalendarDays, Gift, Star, Cake, Bell, MessageSquare } from
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { fmtDate, fmtNum, ageOf } from '@/lib/format';
+import { fmtDate, fmtNum, ageOf, todayLocal } from '@/lib/format';
 
 export const dynamic = 'force-dynamic';
 
 export default async function OverviewPage() {
   const sb = await createClient();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const monthStart = today.slice(0, 8) + '01';
   const in30 = new Date(Date.now() + 30 * 86400e3).toISOString().slice(0, 10);
 
@@ -20,19 +20,20 @@ export default async function OverviewPage() {
     sb.from('events').select('id, title, date, time_label, type, event_registrations(count)').eq('status', 'published').gte('date', today).order('date').limit(5),
     sb.from('event_registrations').select('*', { count: 'exact', head: true }).gte('created_at', monthStart),
     sb.from('redemptions').select('*', { count: 'exact', head: true }).eq('status', 'requested'),
-    sb.from('points_ledger').select('amount').gt('amount', 0).gte('created_at', monthStart),
-    sb.from('points_ledger').select('amount').lt('amount', 0).gte('created_at', monthStart),
+    pagedSum(sb, monthStart, true),
+    pagedSum(sb, monthStart, false),
     sb.from('profiles').select('*', { count: 'exact', head: true }).gte('created_at', monthStart),
     sb.from('contact_messages').select('*', { count: 'exact', head: true }).eq('status', 'new'),
     sb.from('push_campaigns').select('*', { count: 'exact', head: true }).eq('status', 'scheduled'),
-    sb.from('kids').select('first_name, dob').eq('status', 'approved'),
+    pagedKids(sb),
     sb.from('kids').select('id, first_name, last_name, dob, created_at, parent:profiles(id, firstname, lastname)').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
   ]);
 
-  const earned = (earnedMonth.data ?? []).reduce((s, r) => s + r.amount, 0);
-  const spent = -(spentMonth.data ?? []).reduce((s, r) => s + r.amount, 0);
-  const now = new Date(); const end = new Date(Date.now() + 7 * 86400e3);
-  const birthdays = (approvedKids.data ?? []).map((k) => { const d = new Date(k.dob); const b = new Date(now.getFullYear(), d.getMonth(), d.getDate()); if (b < new Date(today)) b.setFullYear(b.getFullYear() + 1); return { ...k, next: b }; })
+  const earned = earnedMonth;
+  const spent = -spentMonth;
+  const startOfToday = new Date(today + 'T00:00:00');
+  const end = new Date(startOfToday.getTime() + 7 * 86400e3);
+  const birthdays = approvedKids.map((k) => { const d = new Date(k.dob); const b = new Date(startOfToday.getFullYear(), d.getMonth(), d.getDate()); if (b < startOfToday) b.setFullYear(b.getFullYear() + 1); return { ...k, next: b }; })
     .filter((k) => k.next <= end).sort((a, b) => a.next.getTime() - b.next.getTime()).slice(0, 8);
 
   const stats = [
@@ -97,4 +98,26 @@ export default async function OverviewPage() {
       </div>
     </div>
   );
+}
+
+async function pagedSum(sb: Awaited<ReturnType<typeof createClient>>, since: string, positive: boolean): Promise<number> {
+  let total = 0;
+  for (let from = 0; ; from += 1000) {
+    let q = sb.from('points_ledger').select('amount').gte('created_at', since).order('id').range(from, from + 999);
+    q = positive ? q.gt('amount', 0) : q.lt('amount', 0);
+    const { data } = await q;
+    total += (data ?? []).reduce((s, r) => s + r.amount, 0);
+    if (!data || data.length < 1000) break;
+  }
+  return total;
+}
+
+async function pagedKids(sb: Awaited<ReturnType<typeof createClient>>): Promise<{ first_name: string; dob: string }[]> {
+  const out: { first_name: string; dob: string }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data } = await sb.from('kids').select('first_name, dob').eq('status', 'approved').order('id').range(from, from + 999);
+    out.push(...(data ?? []));
+    if (!data || data.length < 1000) break;
+  }
+  return out;
 }

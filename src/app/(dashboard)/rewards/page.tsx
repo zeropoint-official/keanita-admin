@@ -20,7 +20,7 @@ export default async function RewardsPage({ searchParams }: { searchParams: Prom
   // Group QR codes by batch (paged: PostgREST caps a request at 1000 rows).
   const codes: { batch: string; points: number; max_uses: number; uses: number; expires_at: string | null; created_at: string; product_id: string | null }[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data } = await supabase.from('qr_codes').select('batch, points, max_uses, uses, expires_at, created_at, product_id').range(from, from + 999);
+    const { data } = await supabase.from('qr_codes').select('batch, points, max_uses, uses, expires_at, created_at, product_id').order('code').range(from, from + 999);
     codes.push(...(data ?? []));
     if (!data || data.length < 1000) break;
   }

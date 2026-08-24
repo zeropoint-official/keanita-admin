@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { DataTable } from '@/components/shared/data-table';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmButton } from '@/components/shared/confirm-button';
-import { fmtDate, ageOf } from '@/lib/format';
+import { fmtDate, ageOf, todayLocal } from '@/lib/format';
 import { setKidStatus } from '../actions';
 
 interface Row { id: string; first_name: string; last_name: string | null; dob: string; gender: string | null; status: string; member_id: string | null; reject_reason: string | null; created_at: string; parent: { id: string; firstname: string | null; lastname: string | null; mobile: string | null; email: string | null } | null }
@@ -21,16 +21,16 @@ export function KidsQueue({ view, rows }: { view: string; rows: Row[] }) {
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const data = useMemo(() => {
     if (view !== 'birthdays') return rows;
-    const now = new Date(); const end = new Date(now.getTime() + 30 * 86400e3);
-    return rows.filter((r) => { const d = new Date(r.dob); const b = new Date(now.getFullYear(), d.getMonth(), d.getDate()); if (b < now) b.setFullYear(b.getFullYear() + 1); return b <= end; })
-      .sort((a, b) => { const na = new Date(a.dob), nb = new Date(b.dob); return (na.getMonth() * 31 + na.getDate()) - (nb.getMonth() * 31 + nb.getDate()); });
+    const startOfToday = new Date(todayLocal() + 'T00:00:00'); const end = new Date(startOfToday.getTime() + 30 * 86400e3);
+    const withNext = rows.map((r) => { const d = new Date(r.dob); const b = new Date(startOfToday.getFullYear(), d.getMonth(), d.getDate()); if (b < startOfToday) b.setFullYear(b.getFullYear() + 1); return { r, next: b }; });
+    return withNext.filter((x) => x.next <= end).sort((a, b) => a.next.getTime() - b.next.getTime()).map((x) => x.r);
   }, [rows, view]);
 
   const exportCsv = () => {
     const head = ['Παιδί', 'Ημ. γέννησης', 'Ηλικία', 'Φύλο', 'Κατάσταση', 'Αρ. μέλους', 'Γονέας', 'Κινητό', 'Email'];
     const lines = data.map((r) => [`${r.first_name} ${r.last_name ?? ''}`.trim(), r.dob, ageOf(r.dob), r.gender ?? '', r.status, r.member_id ?? '', `${r.parent?.firstname ?? ''} ${r.parent?.lastname ?? ''}`.trim(), r.parent?.mobile ?? '', r.parent?.email ?? '']
-      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
-    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['﻿' + [head.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })), download: `kids-${view}.csv` }); a.click();
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })), download: `kids-${view}.csv` }); a.click();
   };
 
   const act = (id: string, s: 'approved' | 'rejected' | 'expired' | 'pending') => async () => { const r = await setKidStatus(id, s, reasons[id]); if (r.ok) router.refresh(); else toast.error(r.error); return r; };

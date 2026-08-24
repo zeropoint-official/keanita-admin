@@ -683,6 +683,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           expires_at: string | null
+          expiry_processed_at: string | null
           id: number
           kid_id: string | null
           label: string
@@ -695,6 +696,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          expiry_processed_at?: string | null
           id?: number
           kid_id?: string | null
           label: string
@@ -707,6 +709,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           expires_at?: string | null
+          expiry_processed_at?: string | null
           id?: number
           kid_id?: string | null
           label?: string
@@ -1258,12 +1261,21 @@ export type Database = {
       enqueue_event_pushes: { Args: never; Returns: number }
       expire_kids: { Args: never; Returns: number }
       expire_points: { Args: never; Returns: number }
+      invoke_send_push: { Args: never; Returns: undefined }
       is_staff: {
         Args: { min_role?: Database["public"]["Enums"]["staff_role"] }
         Returns: boolean
       }
       points_balance: { Args: { p_user: string }; Returns: number }
       redeem_gift: { Args: { p_gift: string; p_kid?: string }; Returns: string }
+      register_for_event: {
+        Args: { p_event: string; p_kid?: string }
+        Returns: number
+      }
+      reject_redemption: {
+        Args: { p_note: string; p_redemption: string; p_staff: string }
+        Returns: boolean
+      }
       scan_qr: { Args: { p_code: string }; Returns: number }
     }
     Enums: {

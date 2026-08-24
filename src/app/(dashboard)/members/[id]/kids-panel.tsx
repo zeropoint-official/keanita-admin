@@ -21,10 +21,10 @@ export function KidsPanel({ parentId, kids }: { parentId: string; kids: Kid[] })
   const router = useRouter();
   const [editing, setEditing] = useState<{ id: string | null; values: KidValues } | null>(null);
   const [pending, start] = useTransition();
-  const [reason, setReason] = useState('');
+  const [reasons, setReasons] = useState<Record<string, string>>({});
 
   const status = (kid: Kid, s: 'approved' | 'rejected' | 'expired' | 'pending') => async () => {
-    const r = await setKidStatus(kid.id, s, s === 'rejected' ? reason : undefined); router.refresh(); setReason(''); return r;
+    const r = await setKidStatus(kid.id, s, s === 'rejected' ? reasons[kid.id] : undefined); router.refresh(); setReasons((m) => ({ ...m, [kid.id]: '' })); return r;
   };
 
   return (
@@ -40,7 +40,7 @@ export function KidsPanel({ parentId, kids }: { parentId: string; kids: Kid[] })
           <div className="flex gap-1 flex-wrap">
             {k.status === 'pending' && <>
               <ConfirmButton size="sm" title="Έγκριση παιδιού;" description="Θα αποδοθεί αριθμός μέλους και θα ενεργοποιηθεί η κάρτα." onConfirm={status(k, 'approved')} successMessage="Εγκρίθηκε">Έγκριση</ConfirmButton>
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Λόγος απόρριψης" className="h-8 w-40 text-xs" />
+              <Input value={reasons[k.id] ?? ''} onChange={(e) => setReasons((m) => ({ ...m, [k.id]: e.target.value }))} placeholder="Λόγος απόρριψης" className="h-8 w-40 text-xs" />
               <ConfirmButton size="sm" variant="outline" title="Απόρριψη;" onConfirm={status(k, 'rejected')}>Απόρριψη</ConfirmButton>
             </>}
             {k.status === 'approved' && <ConfirmButton size="sm" variant="outline" title="Λήξη μέλους;" onConfirm={status(k, 'expired')}>Λήξη</ConfirmButton>}
@@ -65,9 +65,9 @@ export function KidsPanel({ parentId, kids }: { parentId: string; kids: Kid[] })
               <Field label="Επώνυμο"><Input value={editing.values.last_name} onChange={(e) => setEditing({ ...editing, values: { ...editing.values, last_name: e.target.value } })} /></Field>
               <Field label="Ημ. γέννησης" required><Input type="date" value={editing.values.dob} onChange={(e) => setEditing({ ...editing, values: { ...editing.values, dob: e.target.value } })} required /></Field>
               <Field label="Φύλο">
-                <Select value={editing.values.gender ?? ''} onValueChange={(v) => setEditing({ ...editing, values: { ...editing.values, gender: (v || null) as KidValues['gender'] } })}>
-                  <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
-                  <SelectContent><SelectItem value="boy">Αγόρι</SelectItem><SelectItem value="girl">Κορίτσι</SelectItem><SelectItem value="other">Άλλο</SelectItem></SelectContent>
+                <Select value={editing.values.gender ?? 'none'} onValueChange={(v) => setEditing({ ...editing, values: { ...editing.values, gender: (v === 'none' ? null : v) as KidValues['gender'] } })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="none">—</SelectItem><SelectItem value="boy">Αγόρι</SelectItem><SelectItem value="girl">Κορίτσι</SelectItem><SelectItem value="other">Άλλο</SelectItem></SelectContent>
                 </Select>
               </Field>
               <Button type="submit" disabled={pending} className="w-full bg-[#E60C10] hover:bg-[#c50a0d]">Αποθήκευση</Button>

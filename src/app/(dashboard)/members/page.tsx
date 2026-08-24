@@ -17,7 +17,7 @@ export default async function MembersPage({ searchParams }: { searchParams: Prom
     .select('id, firstname, lastname, email, mobile, is_active, created_at, kids(first_name, status)')
     .order('created_at', { ascending: false }).limit(100);
   if (q.trim()) {
-    const term = q.trim().replace(/[%,]/g, '');
+    const term = q.trim().replace(/[^\p{L}\p{N}@ ._+-]/gu, '');
     query = query.or(`firstname.ilike.%${term}%,lastname.ilike.%${term}%,email.ilike.%${term}%,mobile.ilike.%${term}%`);
   }
   const { data: parents } = await query;

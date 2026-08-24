@@ -12,7 +12,7 @@ import { KidsPanel } from './kids-panel';
 export default async function MemberPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const [{ data: p }, { data: kids }, { data: ledger }, { data: regs }, { data: redemptions }, { data: notifs }, { data: devices }] = await Promise.all([
+  const [{ data: p }, { data: kids }, { data: ledger }, { data: regs }, { data: redemptions }, { data: notifs }, { data: devices }, { data: balRow }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', id).maybeSingle(),
     supabase.from('kids').select('*').eq('parent_id', id).order('dob'),
     supabase.from('points_ledger').select('id, amount, reason, label, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(50),
@@ -20,9 +20,10 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
     supabase.from('redemptions').select('id, status, cost, created_at, gifts(name, emoji)').eq('user_id', id).order('created_at', { ascending: false }),
     supabase.from('notifications').select('id, title, type, read_at, created_at').eq('user_id', id).order('created_at', { ascending: false }).limit(30),
     supabase.from('device_tokens').select('platform, last_seen_at').eq('user_id', id),
+    supabase.from('points_balances').select('balance').eq('user_id', id).maybeSingle(),
   ]);
   if (!p) notFound();
-  const balance = (ledger ?? []).reduce((s, l) => s + l.amount, 0);
+  const balance = balRow?.balance ?? 0;
 
   return (
     <div>

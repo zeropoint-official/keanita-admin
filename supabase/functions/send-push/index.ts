@@ -28,17 +28,35 @@ async function resolveRecipients(a: Audience): Promise<string[]> {
     intersect(rows.map((r) => r.parent_id));
   }
   if (a.districts?.length) {
-    const { data } = await sb.from('profiles').select('id').in('district', a.districts);
-    intersect((data ?? []).map((r) => r.id));
+    const rows: { id: string }[] = [];
+    for (let from = 0; ; from += 1000) {
+      const { data } = await sb.from('profiles').select('id').eq('is_active', true).in('district', a.districts).range(from, from + 999);
+      rows.push(...(data ?? []));
+      if (!data || data.length < 1000) break;
+    }
+    intersect(rows.map((r) => r.id));
   }
-  if (ids !== null) return [...ids];
+  if (ids !== null) {
+    // targeted audiences must still respect deactivated accounts
+    const list = [...ids]; const active: string[] = [];
+    for (let i = 0; i < list.length; i += 200) {
+      const { data } = await sb.from('profiles').select('id').eq('is_active', true).in('id', list.slice(i, i + 200));
+      active.push(...(data ?? []).map((r) => r.id));
+    }
+    return active;
+  }
   // all users
   const out: string[] = [];
   for (let from = 0; ; from += 1000) { const { data } = await sb.from('profiles').select('id').eq('is_active', true).range(from, from + 999); out.push(...(data ?? []).map((r) => r.id)); if (!data || data.length < 1000) break; }
   return out;
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  // only the service role (cron dispatcher) may trigger sends
+  const auth = req.headers.get('Authorization') ?? '';
+  if (auth !== `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`) {
+    return new Response('forbidden', { status: 403 });
+  }
   const { data: due } = await sb.from('push_campaigns').select('*').eq('status', 'scheduled').lte('scheduled_at', new Date().toISOString()).limit(5);
   const results = [];
   for (const c of due ?? []) {

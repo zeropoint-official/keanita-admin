@@ -1,3 +1,4 @@
+import { fmtDate } from '@/lib/format';
 import { createClient } from '@/lib/supabase/server';
 
 /** Event/product options for the campaign link selector. */
@@ -8,7 +9,7 @@ export async function loadLinkOptions() {
     supabase.from('products').select('id, name').neq('status', 'archived').order('sort_order').limit(200),
   ]);
   return {
-    events: (events ?? []).map((e) => ({ id: e.id, label: `${e.title} (${e.date})` })),
+    events: (events ?? []).map((e) => ({ id: e.id, label: `${e.title} (${fmtDate(e.date)})` })),
     products: (products ?? []).map((p) => ({ id: p.id, label: p.name })),
   };
 }

@@ -23,13 +23,13 @@ export function InboxTable({ rows }: { rows: ContactRow[] }) {
   const data = useMemo(() => rows.filter((r) => filter === 'all' ? r.status !== 'archived' : r.status === filter), [rows, filter]);
   const current = rows.find((r) => r.id === openId) ?? null;
 
-  const change = (id: string, status: Status) => start(async () => {
+  const change = (id: string, status: Status, silent = false) => start(async () => {
     const r = await setContactStatus(id, status);
     if (!r.ok) { toast.error(r.error); return; }
-    toast.success('Ενημερώθηκε'); router.refresh();
+    if (!silent) toast.success('Ενημερώθηκε'); router.refresh();
   });
 
-  const open = (r: ContactRow) => { setOpenId(r.id); if (r.status === 'new') change(r.id, 'read'); };
+  const open = (r: ContactRow) => { setOpenId(r.id); if (r.status === 'new') change(r.id, 'read', true); };
 
   const columns: ColumnDef<ContactRow, unknown>[] = [
     { accessorKey: 'name', header: 'Όνομα', cell: ({ row }) => <span className={row.original.status === 'new' ? 'font-semibold' : ''}>{row.original.name}</span> },

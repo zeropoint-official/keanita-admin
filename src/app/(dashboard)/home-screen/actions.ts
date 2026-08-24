@@ -1,4 +1,5 @@
 'use server';
+import { localInputToIso } from '@/lib/format';
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
@@ -20,7 +21,7 @@ const sliderSchema = z.object({
 });
 export type SliderInput = z.input<typeof sliderSchema>;
 
-const toIso = (v: string | null | undefined) => (v ? new Date(v).toISOString() : null);
+const toIso = (v: string | null | undefined) => localInputToIso(v);
 
 export async function saveSlider(id: string | null, input: SliderInput) {
   const parsed = sliderSchema.safeParse(input);

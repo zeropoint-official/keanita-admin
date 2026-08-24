@@ -1,3 +1,4 @@
+import { isoToLocalInput } from '@/lib/format';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
@@ -11,11 +12,6 @@ import { CampaignActions } from './campaign-actions';
 import type { Audience, CampaignInput } from '../actions';
 import { loadLinkOptions } from '../link-options';
 
-const toLocalInput = (iso: string | null) => {
-  if (!iso) return null;
-  const d = new Date(iso); const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-};
 
 export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,7 +28,7 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
     kid_min_age: a.kid_min_age ?? null, kid_max_age: a.kid_max_age ?? null, kid_status: a.kid_status ?? 'any',
     districts: (a.districts ?? []).join(', '),
     schedule_mode: c.scheduled_at && c.status !== 'sent' && new Date(c.scheduled_at) > new Date() ? 'later' : 'now',
-    scheduled_at: toLocalInput(c.scheduled_at),
+    scheduled_at: isoToLocalInput(c.scheduled_at),
   };
   const stats = (c.stats ?? {}) as Record<string, number>;
 

@@ -21,12 +21,13 @@ export async function setParentActive(parentId: string, isActive: boolean) {
       const { error } = await db.from('profiles').update({ is_active: isActive }).eq('id', parentId);
       if (error) throw error;
       // also block login when deactivated
-      await db.auth.admin.updateUserById(parentId, { ban_duration: isActive ? 'none' : '876000h' });
+      const { error: banErr } = await db.auth.admin.updateUserById(parentId, { ban_duration: isActive ? 'none' : '876000h' });
+      if (banErr) throw banErr;
     } });
 }
 
 export async function adjustPoints(parentId: string, amount: number, note: string) {
-  if (!Number.isInteger(amount) || amount === 0) return { ok: false as const, error: 'Μη έγκυρο ποσό' };
+  if (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 100000) return { ok: false as const, error: 'Μη έγκυρο ποσό (έως ±100.000)' };
   if (!note.trim()) return { ok: false as const, error: 'Απαιτείται αιτιολογία' };
   return staffAction({ role: 'admin', action: 'points.adjust', entity: 'points_ledger', entityId: parentId, payload: { amount, note }, revalidate: [`/members/${parentId}`, '/rewards'],
     fn: async (db, staffId) => {

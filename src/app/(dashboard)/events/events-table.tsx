@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/shared/data-table';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { fmtDate } from '@/lib/format';
+import { fmtDate, todayLocal } from '@/lib/format';
 import { mediaUrl } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 
@@ -18,7 +18,7 @@ const FILTERS = [['all', 'Όλα'], ['upcoming', 'Επερχόμενα'], ['past
 export function EventsTable({ rows }: { rows: EventRow[] }) {
   const router = useRouter();
   const [filter, setFilter] = useState<(typeof FILTERS)[number][0]>('upcoming');
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
   const data = useMemo(() => rows.filter((r) =>
     filter === 'all' ? true : filter === 'draft' ? r.status === 'draft' : filter === 'upcoming' ? r.date >= today && r.status !== 'archived' : r.date < today), [rows, filter, today]);
 

@@ -65,7 +65,7 @@ export function QrBatches({ rows, products }: { rows: QrBatch[]; products: { id:
     const r = await fetchQrBatchCodes(batch);
     setBusy(null);
     if (!r.ok) { toast.error(r.error); return; }
-    const lines = (r.data ?? []).map((c) => [c.code, `keanita://qr/${c.code}`, c.uses, c.max_uses].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
+    const lines = (r.data ?? []).map((c) => [c.code, `keanita://qr/${c.code}`, c.uses, c.max_uses].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';'));
     const blob = new Blob(['﻿' + ['code,url,uses,max_uses', ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `qr-${batch}.csv` });
     a.click();

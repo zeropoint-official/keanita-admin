@@ -61,8 +61,8 @@ export function RedemptionsTable({ rows }: { rows: RedemptionRow[] }) {
     const lines = data.map((r) => [
       r.status, r.gift?.name ?? '', r.gift?.category ?? '', r.cost, `${r.profile?.firstname ?? ''} ${r.profile?.lastname ?? ''}`.trim(), r.kid?.first_name ?? '',
       r.profile?.mobile ?? '', r.profile?.email ?? '', fmtDateTime(r.created_at), r.handled_at ? fmtDateTime(r.handled_at) : '', r.note ?? '',
-    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','));
-    const blob = new Blob(['﻿' + [head.join(','), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
+    ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';'));
+    const blob = new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' });
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: `εξαργυρώσεις-${filter}.csv` });
     a.click();
   };

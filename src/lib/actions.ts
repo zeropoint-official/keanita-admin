@@ -29,6 +29,7 @@ export async function staffAction<T>(opts: {
     opts.revalidate?.forEach((p) => revalidatePath(p));
     return { ok: true, data };
   } catch (e) {
+    if (e && typeof e === 'object' && 'digest' in e && String((e as { digest: unknown }).digest).startsWith('NEXT_REDIRECT')) throw e;
     const msg = e instanceof Error ? e.message : 'Κάτι πήγε στραβά';
     console.error(`[${opts.action}]`, e);
     return { ok: false, error: msg };
