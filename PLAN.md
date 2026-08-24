@@ -54,7 +54,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | **Characters**: edit the 5 profiles |
 | ☑ | ME | **Pages & Settings**: Terms, About/story, contact info, social links, emergency number, membership tier labels, birthday/intro video, force-update version |
 | ☐ | YOU | Supply any missing media: original product PNGs, character art, brand assets in high-res (current ones are copied from the old app / mock). |
-| ☐ | YOU | Give me the old-app media folder (or confirm evenziademo3.com stays up) so I can migrate the 63MB of PDFs into Storage. |
+| ☑ | YOU | Give me the old-app media folder (or confirm evenziademo3.com stays up) so I can migrate the 63MB of PDFs into Storage. |
 
 ## Phase 4 — Members
 
@@ -64,7 +64,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☑ | ME | **Kids**: approve / reject with reason / expire; queues Pending, Rejected, Expiring soon; CSV export; birthday export |
 | ☑ | ME | Manual KP adjustment with note (writes to ledger, audit-logged) |
 | ☐ | YOU | Fresh production DB dump + media from the agency (see KEANITA-PROJECT-GUIDE checklist). Until then we work with the 2022 test dump. |
-| ☐ | ME | Import script: old MySQL users/kids/registrations/stores → Supabase (bcrypt hashes carried over) |
+| ☑ | ME | Import script: old MySQL users/kids/registrations/stores → Supabase (bcrypt hashes carried over) |
 
 ## Phase 5 — Rewards & Gifts (add-on)
 
@@ -82,7 +82,7 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | | Who | Task |
 |---|---|---|
 | ☑ | ME | **Campaigns**: compose (title, body, type, deep link), audience (all / district / kid age range / membership status / test device), send now or schedule, history with delivered/opened |
-| ☐ | ME | Edge Function `send-push` (Expo Push API) + cron dispatcher for scheduled campaigns, birthday wishes, event reminders |
+| ☑ | ME | Edge Function `send-push` (Expo Push API) + cron dispatcher for scheduled campaigns, birthday wishes, event reminders |
 | ☑ | ME | Automation settings UI: birthday text (GR/EN), optional KP gift, reminder lead time |
 | ☐ | YOU | Expo account access token (expo.dev → Access tokens) → Supabase Edge Function secret `EXPO_ACCESS_TOKEN`. For production iOS/Android push also need the app's EAS project set up (already part of the RN work). |
 
@@ -113,6 +113,12 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 - Separate repo `keanita-admin/` (not inside `keanita-web`). Staff auth is email/password; parents keep the app's email/password login.
 - Content CRUD goes through RLS with the staff session; privileged ops (KP adjust, redemptions, sends) go through server actions with the service-role key.
 - Greek UI for the dashboard (staff are Greek-speaking), code/identifiers in English.
+
+## Data status (2026-08-24)
+- 10,474 kids imported from the old dump (statuses mapped; the nightly cron expires over-11s). 21 legacy events archived, 704 registrations attached.
+- Activity PDFs migrated to Storage; 4 «Γρίφος» PDFs are 404 on the old server → set to draft, ask Keanita for the files.
+- `send-push` Edge Function deployed. Pending user: apply 0008_push_cron.sql + store service key in vault + (optional) EXPO_ACCESS_TOKEN secret.
+- The dump here is from Feb 2026 test data; a FRESH production dump from the agency is still needed before launch (re-run scripts/import-kids.mjs — it is idempotent).
 
 ## Open questions for Keanita
 1. Manual kid approval + expiry at 11 — keep?
