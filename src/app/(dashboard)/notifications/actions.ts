@@ -5,7 +5,7 @@ import { staffAction, type ActionResult } from '@/lib/actions';
 import { requireStaff } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 
-export const audienceSchema = z.object({
+const audienceSchema = z.object({
   all: z.boolean().optional(),
   kid_min_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().optional()),
   kid_max_age: z.preprocess((v) => (v === '' || v == null || Number.isNaN(v) ? null : v), z.coerce.number().int().min(0).max(18).nullable().optional()),
@@ -15,7 +15,7 @@ export const audienceSchema = z.object({
 });
 export type Audience = z.infer<typeof audienceSchema>;
 
-export const campaignSchema = z.object({
+const campaignSchema = z.object({
   title: z.string().min(2, 'Απαιτείται τίτλος'),
   body: z.string().min(2, 'Απαιτείται κείμενο').max(140, 'Μέγιστο 140 χαρακτήρες'),
   type: z.enum(['event', 'reward', 'gift', 'system']),

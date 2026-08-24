@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
-export const characterSchema = z.object({
+const characterSchema = z.object({
   name: z.string().min(2, 'Απαιτείται όνομα'),
   slug: z.string().min(2, 'Απαιτείται slug').regex(/^[a-z0-9-]+$/, 'Το slug επιτρέπει μόνο πεζά λατινικά, αριθμούς και παύλες'),
   tagline: z.string().nullable().default(null),

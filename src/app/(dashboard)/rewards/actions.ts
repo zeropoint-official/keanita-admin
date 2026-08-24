@@ -14,7 +14,7 @@ const ruleSchema = z.object({
   is_active: z.boolean().default(true),
   config: z.record(z.string(), z.unknown()).default({}),
 });
-export const rulesSchema = z.array(ruleSchema);
+const rulesSchema = z.array(ruleSchema);
 export type RuleInput = z.input<typeof ruleSchema>;
 
 export async function saveRules(input: RuleInput[]) {

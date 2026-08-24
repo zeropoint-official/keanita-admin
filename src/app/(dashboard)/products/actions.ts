@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
-export const productSchema = z.object({
+const productSchema = z.object({
   name: z.string().min(2, 'Απαιτείται όνομα'),
   category: z.enum(['juice', 'yogurt']),
   tagline: z.string().nullable().default(null),

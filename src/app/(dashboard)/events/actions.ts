@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
-export const eventSchema = z.object({
+const eventSchema = z.object({
   type: z.enum(['event', 'seminar', 'announcement']),
   title: z.string().min(2, 'Απαιτείται τίτλος'),
   description: z.string().default(''),

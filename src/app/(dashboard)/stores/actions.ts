@@ -7,7 +7,7 @@ const discountSchema = z.object({
   description: z.string().default(''),
 });
 
-export const storeSchema = z.object({
+const storeSchema = z.object({
   name: z.string().min(2, 'Απαιτείται όνομα'),
   category_id: z.coerce.number().int().nullable().default(null),
   phone: z.string().nullable().default(null),

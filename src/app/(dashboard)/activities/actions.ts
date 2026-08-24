@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
-export const activitySchema = z.object({
+const activitySchema = z.object({
   kind: z.enum(['puzzle', 'download']),
   title: z.string().min(2, 'Απαιτείται τίτλος'),
   category: z.string().nullable().default(null),

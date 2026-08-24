@@ -2,7 +2,7 @@
 import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 
-export const giftSchema = z.object({
+const giftSchema = z.object({
   name: z.string().min(2, 'Απαιτείται όνομα'),
   description: z.string().nullable().default(null),
   cost: z.coerce.number().int().min(0, 'Το κόστος πρέπει να είναι ≥ 0'),
