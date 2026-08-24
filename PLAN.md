@@ -114,6 +114,9 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 - Content CRUD goes through RLS with the staff session; privileged ops (KP adjust, redemptions, sends) go through server actions with the service-role key.
 - Greek UI for the dashboard (staff are Greek-speaking), code/identifiers in English.
 
+## Security audit (2026-08-24) — all findings fixed
+Two independent reviewers (security + UX). Critical/high fixed in migration 0009 + code: no client-side point minting, idempotent point expiry (was a balance-draining bug), no kid self-approval, automation RPCs revoked from clients, locked/transactional gift redemption+refund, validated event registration, private avatars bucket. UX: Cyprus-timezone dates (fixed scheduling drift + birthday off-by-one), pagination past the 1000-row cap on all stats/lists, correct member balance, semicolon CSVs, mobile nav, audit-log tab. Deferred (nice-to-have, non-blocking): storage-object cleanup on delete, single-RPC slider swap, event-detail minor date labels.
+
 ## Data status (2026-08-24)
 - 10,474 kids imported from the old dump (statuses mapped; the nightly cron expires over-11s). 21 legacy events archived, 704 registrations attached.
 - Activity PDFs migrated to Storage; 4 «Γρίφος» PDFs are 404 on the old server → set to draft, ask Keanita for the files.
