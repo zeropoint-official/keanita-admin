@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
+import { SectionTabs } from '@/components/shared/section-tabs';
+import { fmtNum } from '@/lib/format';
 import { PageHeader } from '@/components/shared/page-header';
 import { KidsQueue } from './kids-queue';
 import type { KidStatus } from '../actions';
@@ -19,9 +21,18 @@ export default async function KidsQueuePage({ searchParams }: { searchParams: Pr
     q = base.eq('status', (['pending','approved','rejected','expired'].includes(view) ? view : 'pending') as KidStatus).order('created_at', { ascending: view !== 'pending' }).limit(500);
   }
   const { data } = await q;
+  const [{ count: totalParents }, { count: totalKids }, { count: pendingKids }] = await Promise.all([
+    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    supabase.from('kids').select('*', { count: 'exact', head: true }),
+    supabase.from('kids').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+  ]);
   return (
     <div>
-      <PageHeader title="Παιδιά" description="Έγκριση νέων μελών, λήξεις και γενέθλια." />
+      <PageHeader title="Μέλη" description="Έγκριση νέων μελών, λήξεις και γενέθλια." />
+      <SectionTabs active="/members/kids" tabs={[
+        { href: '/members', label: `Γονείς (${fmtNum(totalParents)})` },
+        { href: '/members/kids', label: `Παιδιά (${fmtNum(totalKids)})`, badge: pendingKids ?? 0 },
+      ]} />
       <KidsQueue view={view} rows={(data ?? []) as never} />
     </div>
   );

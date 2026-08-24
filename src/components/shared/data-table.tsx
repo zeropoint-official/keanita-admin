@@ -17,9 +17,10 @@ interface Props<T> {
   emptyText?: string;
   toolbar?: React.ReactNode;
   onRowClick?: (row: T) => void;
+  hideSearch?: boolean;
 }
 
-export function DataTable<T>({ columns, data, searchPlaceholder = 'Αναζήτηση…', pageSize = 25, emptyText = 'Δεν βρέθηκαν εγγραφές.', toolbar, onRowClick }: Props<T>) {
+export function DataTable<T>({ columns, data, searchPlaceholder = 'Αναζήτηση…', pageSize = 25, emptyText = 'Δεν βρέθηκαν εγγραφές.', toolbar, onRowClick, hideSearch }: Props<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
   const table = useReactTable({
@@ -35,10 +36,12 @@ export function DataTable<T>({ columns, data, searchPlaceholder = 'Αναζήτ�
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder={searchPlaceholder} className="pl-8 w-64" />
-        </div>
+        {!hideSearch && (
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} placeholder={searchPlaceholder} className="pl-8 w-64" />
+          </div>
+        )}
         {toolbar}
         <span className="ml-auto text-xs text-muted-foreground">{total} εγγραφές</span>
       </div>
