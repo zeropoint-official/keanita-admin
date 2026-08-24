@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SettingsForm, type SettingField } from './settings-form';
 import { PagesTab, type PageRow } from './pages-tab';
 import { StaffTab, type StaffRow } from './staff-tab';
+import { AuditTab, type AuditRow } from './audit-tab';
 import { bool, num, str, type SettingsMap } from './settings-schema';
 
 const CONTACT: SettingField[] = [
@@ -42,10 +43,11 @@ const PAGE_TITLES: Record<string, string> = { terms: 'Όροι χρήσης', ab
 export default async function SettingsPage() {
   const me = await requireStaff('viewer');
   const supabase = await createClient();
-  const [{ data: settingsRows }, { data: pages }, { data: staff }] = await Promise.all([
+  const [{ data: settingsRows }, { data: pages }, { data: staff }, { data: audit }] = await Promise.all([
     supabase.from('app_settings').select('key, value'),
     supabase.from('pages').select('slug, title, body_md, updated_at').in('slug', PAGE_SLUGS),
     supabase.from('staff').select('id, full_name, role, created_at').order('created_at'),
+    supabase.from('audit_log').select('id, actor_id, action, entity, entity_id, created_at').order('created_at', { ascending: false }).limit(300),
   ]);
   const s: SettingsMap = Object.fromEntries((settingsRows ?? []).map((r) => [r.key, r.value]));
 
@@ -62,6 +64,7 @@ export default async function SettingsPage() {
           <TabsTrigger value="app">Εφαρμογή</TabsTrigger>
           <TabsTrigger value="pages">Σελίδες</TabsTrigger>
           <TabsTrigger value="staff">Προσωπικό</TabsTrigger>
+          <TabsTrigger value="audit">Ιστορικό ενεργειών</TabsTrigger>
         </TabsList>
         <TabsContent value="contact">
           <SettingsForm title="Επικοινωνία" description="Εμφανίζονται στη σελίδα επικοινωνίας της εφαρμογής." fields={CONTACT}
@@ -85,6 +88,7 @@ export default async function SettingsPage() {
         </TabsContent>
         <TabsContent value="pages"><PagesTab pages={pageRows} /></TabsContent>
         <TabsContent value="staff"><StaffTab rows={(staff ?? []) as StaffRow[]} me={{ id: me.id, email: me.email }} isAdmin={me.role === 'admin'} /></TabsContent>
+        <TabsContent value="audit"><AuditTab rows={(audit ?? []).map((a) => ({ ...a, actor: (staff ?? []).find((s) => s.id === a.actor_id)?.full_name ?? '—' })) as AuditRow[]} /></TabsContent>
       </Tabs>
     </div>
   );
