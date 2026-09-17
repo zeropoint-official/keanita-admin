@@ -1,5 +1,6 @@
 'use server';
 import { z } from 'zod';
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { staffAction } from '@/lib/actions';
 import type { ActionResult } from '@/lib/actions';
@@ -149,24 +150,40 @@ export async function uploadCodes(campaignId: string, batchLabel: string, codes:
   });
 }
 
-/** Invite a sponsor-portal user (admin only): auth invite email + staff row with role 'sponsor'. */
+/**
+ * Invite a sponsor-portal user (admin only): auth invite email + staff row
+ * with role 'sponsor'. The email link lands on /set-password of THIS
+ * dashboard (the URL must be in Supabase Auth → Redirect URLs, otherwise
+ * Supabase silently falls back to the project Site URL). If the account
+ * already exists (e.g. an earlier invite was clicked), a set-password email
+ * is sent instead of failing.
+ */
 export async function inviteSponsorUser(sponsorId: string, email: string) {
   const clean = email.trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) return { ok: false as const, error: 'Μη έγκυρο email' };
+  const h = await headers();
+  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
+  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https');
+  const redirectTo = `${proto}://${host}/set-password`;
   return staffAction({
     role: 'admin', action: 'staff.invite_sponsor', entity: 'staff', entityId: sponsorId,
     payload: { email: clean, sponsor_id: sponsorId }, revalidate: ['/sponsors'],
     fn: async (db) => {
-      const { data, error } = await db.auth.admin.inviteUserByEmail(clean);
+      const { data, error } = await db.auth.admin.inviteUserByEmail(clean, { redirectTo });
+      let uid = data?.user?.id ?? null;
       if (error) {
-        throw new Error(/already|exists|registered/i.test(error.message)
-          ? 'Υπάρχει ήδη λογαριασμός με αυτό το email — σύνδεσέ τον χειροκίνητα από τη βάση.'
-          : error.message);
+        if (!/already|exists|registered/i.test(error.message)) throw new Error(error.message);
+        // generateLink resolves the existing user's id without sending anything…
+        const { data: link, error: e1 } = await db.auth.admin.generateLink({ type: 'recovery', email: clean });
+        if (e1 || !link?.user) throw new Error('Ο λογαριασμός υπάρχει ήδη αλλά δεν βρέθηκε — σύνδεσέ τον χειροκίνητα.');
+        uid = link.user.id;
+        // …and this sends the actual set-password email.
+        const { error: e2 } = await db.auth.resetPasswordForEmail(clean, { redirectTo });
+        if (e2) throw new Error(e2.message);
       }
-      const uid = data.user?.id;
       if (!uid) throw new Error('Η πρόσκληση απέτυχε');
-      const { error: e2 } = await db.from('staff').upsert({ id: uid, role: 'sponsor', sponsor_id: sponsorId });
-      if (e2) throw e2;
+      const { error: e3 } = await db.from('staff').upsert({ id: uid, role: 'sponsor', sponsor_id: sponsorId });
+      if (e3) throw e3;
       return uid;
     },
   });

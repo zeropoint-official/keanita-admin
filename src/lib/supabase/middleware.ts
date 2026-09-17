@@ -20,7 +20,10 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
-  const isLogin = path.startsWith('/login');
+  // /set-password receives invite/recovery links: the session arrives in the
+  // URL fragment and only exists client-side, so it must stay reachable
+  // without a cookie session.
+  const isLogin = path.startsWith('/login') || path.startsWith('/set-password');
 
   if (!user && !isLogin) {
     const url = request.nextUrl.clone();
