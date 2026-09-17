@@ -1,4 +1,5 @@
 'use server';
+import { z } from 'zod';
 import { staffAction } from '@/lib/actions';
 import type { Database } from '@/lib/database.types';
 type KidUpdate = Database['public']['Tables']['kids']['Update'];
@@ -37,7 +38,17 @@ export async function adjustPoints(parentId: string, amount: number, note: strin
     } });
 }
 
-export async function updateParent(parentId: string, values: { firstname: string; lastname: string; mobile: string; district: string; city: string }) {
+const opt = z.string().trim().max(200).transform((v) => (v === '' ? null : v));
+const parentSchema = z.object({
+  firstname: z.string().trim().max(100), lastname: z.string().trim().max(100), mobile: opt,
+  zipcode: opt, district: opt, city: opt, area: opt, street_address: opt, building_name: opt, household_number: opt,
+});
+export type ParentInput = z.input<typeof parentSchema>;
+
+export async function updateParent(parentId: string, input: ParentInput) {
+  const parsed = parentSchema.safeParse(input);
+  if (!parsed.success) return { ok: false as const, error: 'Μη έγκυρα δεδομένα' };
+  const values = parsed.data;
   return staffAction({ action: 'profiles.update', entity: 'profiles', entityId: parentId, payload: values, revalidate: [`/members/${parentId}`, '/members'],
     fn: async (db) => { const { error } = await db.from('profiles').update(values).eq('id', parentId); if (error) throw error; } });
 }

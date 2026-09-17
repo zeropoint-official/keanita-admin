@@ -20,6 +20,7 @@ const CONTACT: SettingField[] = [
 ];
 const KIDS: SettingField[] = [
   { key: 'kid_max_age', label: 'Μέγιστη ηλικία παιδιού', kind: 'number', hint: 'Σε έτη' },
+  { key: 'max_kids_per_parent', label: 'Μέγιστος αριθμός παιδιών ανά γονέα', kind: 'number', hint: 'Ελέγχεται κατά την εγγραφή/προσθήκη παιδιού' },
   { key: 'points_expiry_months', label: 'Λήξη πόντων (μήνες)', kind: 'number', hint: '0 = δεν λήγουν' },
   { key: 'membership_tier_label', label: 'Ετικέτα βαθμίδας μέλους', kind: 'text', span: true },
   { key: 'kid_auto_approve', label: 'Αυτόματη έγκριση παιδιών', kind: 'switch', hint: 'Οι νέες εγγραφές παιδιών εγκρίνονται χωρίς έλεγχο.' },
@@ -72,7 +73,7 @@ export default async function SettingsPage() {
         </TabsContent>
         <TabsContent value="kids">
           <SettingsForm title="Kids Club" fields={KIDS} initial={{
-            kid_max_age: num(s, 'kid_max_age', 12), points_expiry_months: num(s, 'points_expiry_months', 0),
+            kid_max_age: num(s, 'kid_max_age', 12), max_kids_per_parent: num(s, 'max_kids_per_parent', 10), points_expiry_months: num(s, 'points_expiry_months', 0),
             membership_tier_label: str(s, 'membership_tier_label'), kid_auto_approve: bool(s, 'kid_auto_approve'),
           }} />
         </TabsContent>

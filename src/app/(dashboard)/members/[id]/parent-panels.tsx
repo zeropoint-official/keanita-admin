@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Field } from '@/components/shared/form-field';
 import { ConfirmButton } from '@/components/shared/confirm-button';
-import { adjustPoints, setParentActive, updateParent } from '../actions';
+import { adjustPoints, setParentActive, updateParent, type ParentInput } from '../actions';
 
 export function ParentActions({ id, isActive }: { id: string; isActive: boolean }) {
   const router = useRouter();
@@ -20,7 +20,7 @@ export function ParentActions({ id, isActive }: { id: string; isActive: boolean 
   );
 }
 
-type ParentValues = { firstname: string; lastname: string; mobile: string; district: string; city: string };
+type ParentValues = { [K in keyof ParentInput]: string };
 export function ParentForm({ id, initial, legacyId }: { id: string; initial: ParentValues; legacyId: number | null }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -32,9 +32,15 @@ export function ParentForm({ id, initial, legacyId }: { id: string; initial: Par
           <Field label="Όνομα"><Input {...register('firstname')} /></Field>
           <Field label="Επώνυμο"><Input {...register('lastname')} /></Field>
           <Field label="Κινητό"><Input {...register('mobile')} /></Field>
+          <Field label="Παλιό ID" hint="Από την παλιά εφαρμογή"><Input value={legacyId ?? '—'} disabled /></Field>
+          <h3 className="sm:col-span-2 mt-2 border-t pt-4 text-sm font-semibold">Διεύθυνση</h3>
+          <Field label="Ταχ. Κώδικας"><Input {...register('zipcode')} /></Field>
           <Field label="Επαρχία"><Input {...register('district')} /></Field>
           <Field label="Πόλη"><Input {...register('city')} /></Field>
-          <Field label="Παλιό ID" hint="Από την παλιά εφαρμογή"><Input value={legacyId ?? '—'} disabled /></Field>
+          <Field label="Περιοχή"><Input {...register('area')} /></Field>
+          <Field label="Διεύθυνση" className="sm:col-span-2"><Input {...register('street_address')} /></Field>
+          <Field label="Πολυκατοικία/Διαμέρισμα"><Input {...register('building_name')} /></Field>
+          <Field label="Αριθμός"><Input {...register('household_number')} /></Field>
           <div className="sm:col-span-2"><Button type="submit" disabled={pending} className="bg-[#E60C10] hover:bg-[#c50a0d]">Αποθήκευση</Button></div>
         </form>
       </CardContent></Card>

@@ -15,8 +15,8 @@ import { ColorField } from '@/components/shared/color-field';
 import { saveGift, type GiftInput } from './actions';
 
 const DEFAULTS: GiftInput = {
-  name: '', description: '', cost: 100, category: 'physical', emoji: '🎁', image_url: null,
-  color: '#E60C10', bg_color: '#FFF0EE', stock: '', requires_approval: true, status: 'draft', sort_order: 0,
+  name: '', description: '', cost: 100, category: 'digital', emoji: '🎁', image_url: null,
+  color: '#E60C10', bg_color: '#FFF0EE', stock: '', requires_approval: false, status: 'draft', sort_order: 0, item_key: '', consumable: false,
 };
 
 export function GiftForm({ id, initial }: { id: string | null; initial?: Partial<GiftInput> }) {
@@ -54,6 +54,9 @@ export function GiftForm({ id, initial }: { id: string | null; initial?: Partial
                   <SelectContent><SelectItem value="draft">Πρόχειρο</SelectItem><SelectItem value="published">Δημοσιευμένο</SelectItem><SelectItem value="archived">Αρχείο</SelectItem></SelectContent>
                 </Select>)} />
             </Field>
+            <Field label="Κωδικός στοιχείου εφαρμογής" hint="Συνδέει το δώρο με αντικείμενο μέσα στην εφαρμογή (π.χ. hat_crown, theme_night). Κενό = απλό δώρο." className="sm:col-span-2">
+              <Input {...register('item_key')} placeholder="π.χ. hat_crown" />
+            </Field>
             <Field label="Περιγραφή" className="sm:col-span-2"><Textarea rows={4} {...register('description')} /></Field>
           </CardContent>
         </Card>
@@ -80,6 +83,8 @@ export function GiftForm({ id, initial }: { id: string | null; initial?: Partial
             <Field label="Σειρά εμφάνισης"><Input type="number" {...register('sort_order')} /></Field>
             <div className="flex items-center justify-between"><span className="text-sm">Απαιτεί έγκριση</span>
               <Controller control={control} name="requires_approval" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
+            <div className="flex items-center justify-between"><span className="text-sm">Αναλώσιμο <span className="text-muted-foreground">(αγοράζεται ξανά)</span></span>
+              <Controller control={control} name="consumable" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
           </CardContent>
         </Card>
         <Button type="submit" disabled={pending} className="w-full bg-[#E60C10] hover:bg-[#c50a0d]">{pending ? 'Αποθήκευση…' : 'Αποθήκευση'}</Button>

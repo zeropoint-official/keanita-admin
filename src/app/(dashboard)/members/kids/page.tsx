@@ -9,7 +9,7 @@ export default async function KidsQueuePage({ searchParams }: { searchParams: Pr
   const { view = 'pending' } = await searchParams;
   const supabase = await createClient();
     const makeQuery = () => {
-    const b = supabase.from('kids').select('id, first_name, last_name, dob, gender, status, member_id, reject_reason, created_at, parent:profiles(id, firstname, lastname, mobile, email)');
+    const b = supabase.from('kids').select('id, first_name, last_name, dob, gender, status, member_id, reject_reason, created_at, parent:profiles(id, firstname, lastname, mobile, email, city, area)');
     if (view === 'expiring') {
       const limit = new Date(); limit.setFullYear(limit.getFullYear() - maxAge); limit.setMonth(limit.getMonth() + 3);   // turning max age within 3 months
       return b.eq('status', 'approved').lte('dob', limit.toISOString().slice(0, 10)).order('dob');

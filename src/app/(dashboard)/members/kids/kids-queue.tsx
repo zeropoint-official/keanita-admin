@@ -13,7 +13,7 @@ import { ConfirmButton } from '@/components/shared/confirm-button';
 import { fmtDate, ageOf, todayLocal } from '@/lib/format';
 import { setKidStatus } from '../actions';
 
-interface Row { id: string; first_name: string; last_name: string | null; dob: string; gender: string | null; status: string; member_id: string | null; reject_reason: string | null; created_at: string; parent: { id: string; firstname: string | null; lastname: string | null; mobile: string | null; email: string | null } | null }
+interface Row { id: string; first_name: string; last_name: string | null; dob: string; gender: string | null; status: string; member_id: string | null; reject_reason: string | null; created_at: string; parent: { id: string; firstname: string | null; lastname: string | null; mobile: string | null; email: string | null; city: string | null; area: string | null } | null }
 const VIEWS = [['pending', 'Σε αναμονή'], ['approved', 'Εγκεκριμένα'], ['rejected', 'Απορριφθέντα'], ['expired', 'Ληγμένα'], ['expiring', 'Λήγουν σύντομα'], ['birthdays', 'Γενέθλια (30 ημ.)']] as const;
 
 export function KidsQueue({ view, rows }: { view: string; rows: Row[] }) {
@@ -27,8 +27,8 @@ export function KidsQueue({ view, rows }: { view: string; rows: Row[] }) {
   }, [rows, view]);
 
   const exportCsv = () => {
-    const head = ['Παιδί', 'Ημ. γέννησης', 'Ηλικία', 'Φύλο', 'Κατάσταση', 'Αρ. μέλους', 'Γονέας', 'Κινητό', 'Email'];
-    const lines = data.map((r) => [`${r.first_name} ${r.last_name ?? ''}`.trim(), r.dob, ageOf(r.dob), r.gender ?? '', r.status, r.member_id ?? '', `${r.parent?.firstname ?? ''} ${r.parent?.lastname ?? ''}`.trim(), r.parent?.mobile ?? '', r.parent?.email ?? '']
+    const head = ['Παιδί', 'Ημ. γέννησης', 'Ηλικία', 'Φύλο', 'Κατάσταση', 'Αρ. μέλους', 'Γονέας', 'Κινητό', 'Email', 'Πόλη', 'Περιοχή'];
+    const lines = data.map((r) => [`${r.first_name} ${r.last_name ?? ''}`.trim(), r.dob, ageOf(r.dob), r.gender ?? '', r.status, r.member_id ?? '', `${r.parent?.firstname ?? ''} ${r.parent?.lastname ?? ''}`.trim(), r.parent?.mobile ?? '', r.parent?.email ?? '', r.parent?.city ?? '', r.parent?.area ?? '']
       .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'));
     const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['﻿' + [head.join(';'), ...lines].join('\n')], { type: 'text/csv;charset=utf-8' })), download: `kids-${view}.csv` }); a.click();
   };

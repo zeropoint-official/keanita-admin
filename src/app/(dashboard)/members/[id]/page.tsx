@@ -44,7 +44,8 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
           <TabsTrigger value="events">Εκδηλώσεις</TabsTrigger><TabsTrigger value="gifts">Δώρα</TabsTrigger><TabsTrigger value="notifs">Ειδοποιήσεις</TabsTrigger>
         </TabsList>
         <TabsContent value="kids"><KidsPanel parentId={id} kids={kids ?? []} /></TabsContent>
-        <TabsContent value="profile"><ParentForm id={id} initial={{ firstname: p.firstname ?? '', lastname: p.lastname ?? '', mobile: p.mobile ?? '', district: p.district ?? '', city: p.city ?? '' }} legacyId={p.legacy_id} /></TabsContent>
+        <TabsContent value="profile"><ParentForm id={id} initial={{ firstname: p.firstname ?? '', lastname: p.lastname ?? '', mobile: p.mobile ?? '', zipcode: p.zipcode ?? '', district: p.district ?? '', city: p.city ?? '', area: p.area ?? '',
+          street_address: p.street_address ?? '', building_name: p.building_name ?? '', household_number: p.household_number ?? '' }} legacyId={p.legacy_id} /></TabsContent>
         <TabsContent value="points">
           <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
             <Card><CardHeader><CardTitle>Πρόσφατες κινήσεις</CardTitle></CardHeader><CardContent className="divide-y">
