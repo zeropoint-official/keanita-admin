@@ -2,7 +2,7 @@ import { LogoutButton } from './logout-button';
 import { MobileNav } from './mobile-nav';
 import type { Staff } from '@/lib/auth';
 
-const ROLE_LABEL = { admin: 'Διαχειριστής', editor: 'Συντάκτης', viewer: 'Προβολή' };
+const ROLE_LABEL = { admin: 'Διαχειριστής', editor: 'Συντάκτης', viewer: 'Προβολή', sponsor: 'Χορηγός' };
 
 export function Header({ staff }: { staff: Staff }) {
   return (

@@ -29,6 +29,12 @@ const MAP: Record<string, { label: string; cls: string }> = {
   physical:   { label: 'Φυσικό',      cls: 'bg-orange-100 text-orange-800' },
   puzzle:     { label: 'Χρωμοσελίδα', cls: 'bg-purple-100 text-purple-800' },
   download:   { label: 'Λήψη PDF',    cls: 'bg-sky-100 text-sky-800' },
+  active:     { label: 'Ενεργό',      cls: 'bg-green-100 text-green-800' },
+  paused:     { label: 'Σε παύση',    cls: 'bg-amber-100 text-amber-800' },
+  ended:      { label: 'Ολοκληρώθηκε', cls: 'bg-gray-100 text-gray-600' },
+  won:        { label: 'Ενεργό δώρο', cls: 'bg-green-100 text-green-800' },
+  redeemed:   { label: 'Εξαργυρώθηκε', cls: 'bg-blue-100 text-blue-800' },
+  revoked:    { label: 'Ανακλήθηκε',  cls: 'bg-red-100 text-red-800' },
 };
 
 export function StatusBadge({ value, className }: { value: string | null | undefined; className?: string }) {

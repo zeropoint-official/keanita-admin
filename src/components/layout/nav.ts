@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, CalendarDays, Home, Package, Store, Puzzle, Smile,
-  Star, Gift, Bell, Settings, type LucideIcon,
+  Star, Gift, Handshake, Bell, Settings, type LucideIcon,
 } from 'lucide-react';
 
 export interface NavItem { href: string; label: string; icon: LucideIcon }
@@ -22,6 +22,7 @@ export const NAV: NavGroup[] = [
   { title: 'Kids Club', items: [
     { href: '/rewards', label: 'Πόντοι KP', icon: Star },
     { href: '/gifts', label: 'Δώρα & Εξαργυρώσεις', icon: Gift },
+    { href: '/sponsors', label: 'Χορηγοί & Δώρα', icon: Handshake },
     { href: '/notifications', label: 'Ειδοποιήσεις', icon: Bell },
   ]},
   { title: 'Σύστημα', items: [

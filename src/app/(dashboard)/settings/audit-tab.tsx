@@ -9,12 +9,14 @@ const ACTION_LABEL: Record<string, string> = {
   create: 'Δημιουργία', update: 'Ενημέρωση', delete: 'Διαγραφή', status: 'Αλλαγή κατάστασης',
   approve: 'Έγκριση', approved: 'Έγκριση', rejected: 'Απόρριψη', expired: 'Λήξη', pending: 'Επαναφορά',
   adjust: 'Προσαρμογή KP', checkin: 'Check-in', activate: 'Ενεργοποίηση', deactivate: 'Απενεργοποίηση',
+  redeem: 'Εξαργύρωση', revoke: 'Ανάκληση',
 };
 const ENTITY_LABEL: Record<string, string> = {
   events: 'Εκδήλωση', products: 'Προϊόν', stores: 'Κατάστημα', store_categories: 'Κατηγορία', activities: 'Δραστηριότητα',
   characters: 'Χαρακτήρας', home_sliders: 'Slide', gifts: 'Δώρο', redemptions: 'Εξαργύρωση', kids: 'Παιδί', profiles: 'Γονέας',
   points_ledger: 'Πόντοι', app_settings: 'Ρυθμίσεις', pages: 'Σελίδα', staff: 'Προσωπικό', push_campaigns: 'Καμπάνια',
   contact_messages: 'Μήνυμα', reward_rules: 'Κανόνες KP', qr_codes: 'QR', event_registrations: 'Συμμετοχή',
+  sponsors: 'Χορηγός', sponsor_campaigns: 'Καμπάνια χορηγού', awards: 'Δώρο χορηγού', campaign_codes: 'Κωδικοί',
 };
 
 export function AuditTab({ rows }: { rows: AuditRow[] }) {

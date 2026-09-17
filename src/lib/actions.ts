@@ -10,7 +10,7 @@ export type ActionResult<T = undefined> = { ok: true; data?: T } | { ok: false; 
  * writes an audit_log row, revalidates paths. Always returns a result object (never throws to the client).
  */
 export async function staffAction<T>(opts: {
-  role?: StaffRole;
+  role?: Exclude<StaffRole, 'sponsor'>;
   action: string;            // 'events.update'
   entity: string;            // 'events'
   entityId?: string | null;

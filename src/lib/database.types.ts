@@ -77,6 +77,33 @@ export type Database = {
         }
         Relationships: []
       }
+      areas: {
+        Row: {
+          area_en: string | null
+          area_gr: string
+          district_en: string | null
+          district_gr: string
+          id: number
+          old_import_id: number | null
+        }
+        Insert: {
+          area_en?: string | null
+          area_gr: string
+          district_en?: string | null
+          district_gr: string
+          id?: number
+          old_import_id?: number | null
+        }
+        Update: {
+          area_en?: string | null
+          area_gr?: string
+          district_en?: string | null
+          district_gr?: string
+          id?: number
+          old_import_id?: number | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -106,6 +133,137 @@ export type Database = {
           payload?: Json | null
         }
         Relationships: []
+      }
+      awards: {
+        Row: {
+          campaign_id: string
+          code_id: string | null
+          expires_at: string | null
+          id: string
+          kid_id: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: Database["public"]["Enums"]["award_status"]
+          trigger_snapshot: Json | null
+          user_id: string
+          won_at: string
+        }
+        Insert: {
+          campaign_id: string
+          code_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kid_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: Database["public"]["Enums"]["award_status"]
+          trigger_snapshot?: Json | null
+          user_id: string
+          won_at?: string
+        }
+        Update: {
+          campaign_id?: string
+          code_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kid_id?: string | null
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+          status?: Database["public"]["Enums"]["award_status"]
+          trigger_snapshot?: Json | null
+          user_id?: string
+          won_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "awards_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_award_view"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "awards_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "awards_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "awards_kid_id_fkey"
+            columns: ["kid_id"]
+            isOneToOne: false
+            referencedRelation: "kids"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "awards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_codes: {
+        Row: {
+          award_id: string | null
+          batch_label: string | null
+          campaign_id: string
+          code: string
+          id: string
+        }
+        Insert: {
+          award_id?: string | null
+          batch_label?: string | null
+          campaign_id: string
+          code: string
+          id?: string
+        }
+        Update: {
+          award_id?: string | null
+          batch_label?: string | null
+          campaign_id?: string
+          code?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_codes_award_fk"
+            columns: ["award_id"]
+            isOneToOne: false
+            referencedRelation: "awards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_codes_award_fk"
+            columns: ["award_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_award_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_codes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_award_view"
+            referencedColumns: ["campaign_id"]
+          },
+          {
+            foreignKeyName: "campaign_codes_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "sponsor_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       characters: {
         Row: {
@@ -420,12 +578,14 @@ export type Database = {
           bg_color: string
           category: Database["public"]["Enums"]["gift_category"]
           color: string
+          consumable: boolean
           cost: number
           created_at: string
           description: string | null
           emoji: string | null
           id: string
           image_url: string | null
+          item_key: string | null
           name: string
           requires_approval: boolean
           sort_order: number
@@ -437,12 +597,14 @@ export type Database = {
           bg_color?: string
           category?: Database["public"]["Enums"]["gift_category"]
           color?: string
+          consumable?: boolean
           cost: number
           created_at?: string
           description?: string | null
           emoji?: string | null
           id?: string
           image_url?: string | null
+          item_key?: string | null
           name: string
           requires_approval?: boolean
           sort_order?: number
@@ -454,12 +616,14 @@ export type Database = {
           bg_color?: string
           category?: Database["public"]["Enums"]["gift_category"]
           color?: string
+          consumable?: boolean
           cost?: number
           created_at?: string
           description?: string | null
           emoji?: string | null
           id?: string
           image_url?: string | null
+          item_key?: string | null
           name?: string
           requires_approval?: boolean
           sort_order?: number
@@ -798,12 +962,15 @@ export type Database = {
         Row: {
           area: string | null
           avatar_url: string | null
+          building_name: string | null
           city: string | null
           created_at: string | null
           district: string | null
           dob: string | null
           email: string | null
+          equipped_items: Json
           firstname: string | null
+          household_number: string | null
           id: string
           is_active: boolean
           language: string
@@ -811,17 +978,22 @@ export type Database = {
           lastname: string | null
           legacy_id: number | null
           mobile: string | null
+          street_address: string | null
           updated_at: string
+          zipcode: string | null
         }
         Insert: {
           area?: string | null
           avatar_url?: string | null
+          building_name?: string | null
           city?: string | null
           created_at?: string | null
           district?: string | null
           dob?: string | null
           email?: string | null
+          equipped_items?: Json
           firstname?: string | null
+          household_number?: string | null
           id: string
           is_active?: boolean
           language?: string
@@ -829,17 +1001,22 @@ export type Database = {
           lastname?: string | null
           legacy_id?: number | null
           mobile?: string | null
+          street_address?: string | null
           updated_at?: string
+          zipcode?: string | null
         }
         Update: {
           area?: string | null
           avatar_url?: string | null
+          building_name?: string | null
           city?: string | null
           created_at?: string | null
           district?: string | null
           dob?: string | null
           email?: string | null
+          equipped_items?: Json
           firstname?: string | null
+          household_number?: string | null
           id?: string
           is_active?: boolean
           language?: string
@@ -847,7 +1024,9 @@ export type Database = {
           lastname?: string | null
           legacy_id?: number | null
           mobile?: string | null
+          street_address?: string | null
           updated_at?: string
+          zipcode?: string | null
         }
         Relationships: []
       }
@@ -1094,26 +1273,153 @@ export type Database = {
         }
         Relationships: []
       }
+      sponsor_campaigns: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          expiry_days: number | null
+          fulfillment: Database["public"]["Enums"]["fulfillment_kind"]
+          id: string
+          per_user_limit: number
+          prize_image_path: string | null
+          profile_text: string
+          quota_amount: number
+          quota_mode: Database["public"]["Enums"]["quota_mode"]
+          redeem_link: string | null
+          requirements: Json
+          sponsor_id: string
+          starts_at: string | null
+          status: Database["public"]["Enums"]["sponsor_campaign_status"]
+          title: string
+          trigger: Database["public"]["Enums"]["campaign_trigger"]
+          trigger_config: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          expiry_days?: number | null
+          fulfillment: Database["public"]["Enums"]["fulfillment_kind"]
+          id?: string
+          per_user_limit?: number
+          prize_image_path?: string | null
+          profile_text: string
+          quota_amount: number
+          quota_mode?: Database["public"]["Enums"]["quota_mode"]
+          redeem_link?: string | null
+          requirements?: Json
+          sponsor_id: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["sponsor_campaign_status"]
+          title: string
+          trigger: Database["public"]["Enums"]["campaign_trigger"]
+          trigger_config?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          expiry_days?: number | null
+          fulfillment?: Database["public"]["Enums"]["fulfillment_kind"]
+          id?: string
+          per_user_limit?: number
+          prize_image_path?: string | null
+          profile_text?: string
+          quota_amount?: number
+          quota_mode?: Database["public"]["Enums"]["quota_mode"]
+          redeem_link?: string | null
+          requirements?: Json
+          sponsor_id?: string
+          starts_at?: string | null
+          status?: Database["public"]["Enums"]["sponsor_campaign_status"]
+          title?: string
+          trigger?: Database["public"]["Enums"]["campaign_trigger"]
+          trigger_config?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_campaigns_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sponsors: {
+        Row: {
+          brand_color: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          logo_path: string | null
+          name: string
+          status: Database["public"]["Enums"]["sponsor_status"]
+          updated_at: string
+        }
+        Insert: {
+          brand_color?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          logo_path?: string | null
+          name: string
+          status?: Database["public"]["Enums"]["sponsor_status"]
+          updated_at?: string
+        }
+        Update: {
+          brand_color?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          logo_path?: string | null
+          name?: string
+          status?: Database["public"]["Enums"]["sponsor_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff: {
         Row: {
           created_at: string
           full_name: string | null
           id: string
           role: Database["public"]["Enums"]["staff_role"]
+          sponsor_id: string | null
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
           role?: Database["public"]["Enums"]["staff_role"]
+          sponsor_id?: string | null
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
           role?: Database["public"]["Enums"]["staff_role"]
+          sponsor_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "staff_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       store_categories: {
         Row: {
@@ -1245,8 +1551,34 @@ export type Database = {
           },
         ]
       }
+      sponsor_award_view: {
+        Row: {
+          campaign_id: string | null
+          campaign_title: string | null
+          expires_at: string | null
+          id: string | null
+          kid_first_name: string | null
+          member_id: string | null
+          redeemed_at: string | null
+          sponsor_id: string | null
+          status: Database["public"]["Enums"]["award_status"] | null
+          won_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sponsor_campaigns_sponsor_id_fkey"
+            columns: ["sponsor_id"]
+            isOneToOne: false
+            referencedRelation: "sponsors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      campaign_stock: { Args: { p_campaign: string }; Returns: number }
+      current_sponsor_id: { Args: never; Returns: string }
+      delete_own_account: { Args: never; Returns: undefined }
       earn_points: {
         Args: {
           p_amount?: number
@@ -1259,6 +1591,7 @@ export type Database = {
       }
       enqueue_birthday_pushes: { Args: never; Returns: number }
       enqueue_event_pushes: { Args: never; Returns: number }
+      expire_awards: { Args: never; Returns: number }
       expire_kids: { Args: never; Returns: number }
       expire_points: { Args: never; Returns: number }
       invoke_send_push: { Args: never; Returns: undefined }
@@ -1267,7 +1600,33 @@ export type Database = {
         Returns: boolean
       }
       points_balance: { Args: { p_user: string }; Returns: number }
+      redeem_award: {
+        Args: { p_award: string }
+        Returns: {
+          campaign_id: string
+          code_id: string | null
+          expires_at: string | null
+          id: string
+          kid_id: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: Database["public"]["Enums"]["award_status"]
+          trigger_snapshot: Json | null
+          user_id: string
+          won_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "awards"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       redeem_gift: { Args: { p_gift: string; p_kid?: string }; Returns: string }
+      register_device_token: {
+        Args: { p_platform: string; p_token: string }
+        Returns: undefined
+      }
       register_for_event: {
         Args: { p_event: string; p_kid?: string }
         Returns: number
@@ -1277,9 +1636,32 @@ export type Database = {
         Returns: boolean
       }
       scan_qr: { Args: { p_code: string }; Returns: number }
+      win_campaign_gift: {
+        Args: { p_campaign: string; p_context?: Json; p_kid?: string }
+        Returns: {
+          campaign_id: string
+          code_id: string | null
+          expires_at: string | null
+          id: string
+          kid_id: string | null
+          redeemed_at: string | null
+          redeemed_by: string | null
+          status: Database["public"]["Enums"]["award_status"]
+          trigger_snapshot: Json | null
+          user_id: string
+          won_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "awards"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       activity_kind: "puzzle" | "download"
+      award_status: "won" | "redeemed" | "expired" | "revoked"
       campaign_status:
         | "draft"
         | "scheduled"
@@ -1287,8 +1669,16 @@ export type Database = {
         | "sent"
         | "failed"
         | "cancelled"
+      campaign_trigger:
+        | "game_milestone"
+        | "game_drop"
+        | "kp_claim"
+        | "streak"
+        | "event_attendance"
+        | "manual"
       content_status: "draft" | "published" | "archived"
       event_type: "event" | "seminar" | "announcement"
+      fulfillment_kind: "pickup" | "code"
       gender: "boy" | "girl" | "other"
       gift_category: "digital" | "physical"
       kid_status: "pending" | "approved" | "rejected" | "expired"
@@ -1306,6 +1696,7 @@ export type Database = {
         | "birthday"
         | "expiry"
       product_category: "juice" | "yogurt"
+      quota_mode: "total" | "monthly" | "weekly"
       redemption_status:
         | "requested"
         | "approved"
@@ -1313,7 +1704,9 @@ export type Database = {
         | "delivered"
         | "rejected"
         | "cancelled"
-      staff_role: "admin" | "editor" | "viewer"
+      sponsor_campaign_status: "draft" | "active" | "paused" | "ended"
+      sponsor_status: "draft" | "active" | "archived"
+      staff_role: "admin" | "editor" | "viewer" | "sponsor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1329,12 +1722,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1358,11 +1751,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1383,11 +1776,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1408,11 +1801,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1425,11 +1818,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -1442,6 +1835,7 @@ export const Constants = {
   public: {
     Enums: {
       activity_kind: ["puzzle", "download"],
+      award_status: ["won", "redeemed", "expired", "revoked"],
       campaign_status: [
         "draft",
         "scheduled",
@@ -1450,8 +1844,17 @@ export const Constants = {
         "failed",
         "cancelled",
       ],
+      campaign_trigger: [
+        "game_milestone",
+        "game_drop",
+        "kp_claim",
+        "streak",
+        "event_attendance",
+        "manual",
+      ],
       content_status: ["draft", "published", "archived"],
       event_type: ["event", "seminar", "announcement"],
+      fulfillment_kind: ["pickup", "code"],
       gender: ["boy", "girl", "other"],
       gift_category: ["digital", "physical"],
       kid_status: ["pending", "approved", "rejected", "expired"],
@@ -1470,6 +1873,7 @@ export const Constants = {
         "expiry",
       ],
       product_category: ["juice", "yogurt"],
+      quota_mode: ["total", "monthly", "weekly"],
       redemption_status: [
         "requested",
         "approved",
@@ -1478,7 +1882,9 @@ export const Constants = {
         "rejected",
         "cancelled",
       ],
-      staff_role: ["admin", "editor", "viewer"],
+      sponsor_campaign_status: ["draft", "active", "paused", "ended"],
+      sponsor_status: ["draft", "active", "archived"],
+      staff_role: ["admin", "editor", "viewer", "sponsor"],
     },
   },
 } as const
