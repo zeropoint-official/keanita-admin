@@ -1,6 +1,6 @@
 import {
   LayoutDashboard, Users, CalendarDays, Home, Package, Store, Puzzle, Smile,
-  Star, Gift, Handshake, Bell, Settings, type LucideIcon,
+  Star, Gift, Handshake, Bell, Settings, BookOpen, ChartLine, type LucideIcon,
 } from 'lucide-react';
 
 export interface NavItem { href: string; label: string; icon: LucideIcon }
@@ -9,6 +9,7 @@ export interface NavGroup { title: string; items: NavItem[] }
 export const NAV: NavGroup[] = [
   { title: 'Γενικά', items: [
     { href: '/', label: 'Επισκόπηση', icon: LayoutDashboard },
+    { href: '/analytics', label: 'Αναλυτικά', icon: ChartLine },
     { href: '/members', label: 'Μέλη', icon: Users },
   ]},
   { title: 'Περιεχόμενο', items: [
@@ -27,5 +28,6 @@ export const NAV: NavGroup[] = [
   ]},
   { title: 'Σύστημα', items: [
     { href: '/settings', label: 'Ρυθμίσεις & Σελίδες', icon: Settings },
+    { href: '/guide', label: 'Οδηγός χρήσης', icon: BookOpen },
   ]},
 ];

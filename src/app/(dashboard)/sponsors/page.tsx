@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Plus } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
+import { HelpLink } from '@/components/shared/help-link';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SponsorsTable } from './sponsors-table';
@@ -29,6 +30,7 @@ export default async function SponsorsPage({ searchParams }: { searchParams: Pro
   return (
     <div>
       <PageHeader title="Χορηγοί & Δώρα" description="Χορηγίες ως περιεχόμενο: καμπάνιες με απόθεμα, κανόνες νίκης και οδηγίες παραλαβής — χωρίς νέα έκδοση της εφαρμογής.">
+        <HelpLink section="sponsors" />
         <Button variant="outline" render={<Link href="/sponsors/campaigns/new" />}><Plus className="h-4 w-4 mr-1" />Νέα καμπάνια</Button>
         <Button render={<Link href="/sponsors/new" />} className="bg-[#E60C10] hover:bg-[#c50a0d]"><Plus className="h-4 w-4 mr-1" />Νέος χορηγός</Button>
       </PageHeader>

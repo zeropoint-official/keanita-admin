@@ -101,8 +101,19 @@ Legend: **[ME]** = Claude does it · **[YOU]** = needs you (account access, deci
 | ☐ | ME | `vercel.json`, env var list, `npm run build` clean, preview deploy |
 | ☐ | YOU | `vercel login` (or add me to the team), create project `keanita-admin`, set env vars (I'll give the exact list), point `admin.<domain>` DNS |
 | ☐ | YOU | Create GitHub repo `zeropoint-official/keanita-admin` and add remote (I'll push) |
-| ☐ | ME | Staff user guide (Greek) — short README with screenshots per section |
-| ☐ | YOU | Create staff accounts for Keanita managers; walk them through it |
+| ☑ | ME | Staff user guide (Greek) — in-dashboard `/guide` page (searchable, per-section tutorials, sponsors deep-dive) instead of a README |
+| ☑ | ME | Staff invites from Settings → Προσωπικό (`inviteStaff`): new emails get a Supabase invite → `/set-password`; emails that already exist as app (parent) accounts get the staff row on the same account + a set-password email — no duplicate accounts |
+| ☐ | YOU | Create staff accounts for Keanita managers; walk them through it (now self-serve via Settings → Προσωπικό → Πρόσκληση) |
+
+## Phase 9 — Analytics (2026-09-17, code-complete, needs `db:push`)
+
+| | Who | Task |
+|---|---|---|
+| ☑ | ME | Migration `0020_analytics.sql`: `app_events` (RLS: insert own / staff read, 60-day retention), `app_events_daily` rollup + nightly `rollup-app-events` cron (02:40), invoker RPCs `analytics_activity`, `analytics_events`, `analytics_summary` |
+| ☑ | ME | RN app: `lib/analytics.ts` batched tracker (silent-fail, flush on background), auto screen views (`screen:<route>` via `useSegments` in `app/_layout.tsx`), `game_start` in games.tsx, user wired in `contexts/auth.tsx` |
+| ☑ | ME | Dashboard `/analytics`: DAU/WAU/MAU/members KPIs, daily actives + game plays + KP earned-vs-spent + signups charts, screens table, sponsor-awards funnel; nav entry + guide section |
+| ☐ | YOU | `npm run db:push` (applies 0020 — and 0016–0019 if still pending), then `npm run db:types` in keanita-admin AND regenerate `nextjs-sample/lib/database.types.ts` (drops the `as unknown as SupabaseClient` casts in `analytics/page.tsx` + `lib/analytics.ts`) |
+| ☐ | YOU | Ship the app update — screen data appears only after the tracked build reaches users |
 
 ---
 

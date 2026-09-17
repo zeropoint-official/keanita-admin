@@ -47,7 +47,7 @@ export default async function SettingsPage() {
   const [{ data: settingsRows }, { data: pages }, { data: staff }, { data: audit }] = await Promise.all([
     supabase.from('app_settings').select('key, value'),
     supabase.from('pages').select('slug, title, body_md, updated_at').in('slug', PAGE_SLUGS),
-    supabase.from('staff').select('id, full_name, role, created_at').order('created_at'),
+    supabase.from('staff').select('id, full_name, role, created_at').neq('role', 'sponsor').order('created_at'),
     supabase.from('audit_log').select('id, actor_id, action, entity, entity_id, created_at').order('created_at', { ascending: false }).limit(300),
   ]);
   const s: SettingsMap = Object.fromEntries((settingsRows ?? []).map((r) => [r.key, r.value]));

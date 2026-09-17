@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { PageHeader } from '@/components/shared/page-header';
+import { HelpLink } from '@/components/shared/help-link';
 import { CampaignForm } from '../campaign-form';
 import { getForecastStats } from '../../stats';
 
@@ -9,5 +10,5 @@ export default async function NewCampaignPage() {
     supabase.from('sponsors').select('id, name').neq('status', 'archived').order('name'),
     getForecastStats(supabase),
   ]);
-  return (<div><PageHeader title="Νέα καμπάνια" /><CampaignForm id={null} sponsors={sponsors ?? []} stats={stats} codesCount={0} /></div>);
+  return (<div><PageHeader title="Νέα καμπάνια"><HelpLink section="sponsors" /></PageHeader><CampaignForm id={null} sponsors={sponsors ?? []} stats={stats} codesCount={0} /></div>);
 }

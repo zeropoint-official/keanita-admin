@@ -56,6 +56,59 @@ export type Database = {
         }
         Relationships: []
       }
+      app_events: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          props: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name: string
+          props?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          props?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_events_daily: {
+        Row: {
+          count: number
+          day: string
+          name: string
+          users: number
+        }
+        Insert: {
+          count: number
+          day: string
+          name: string
+          users: number
+        }
+        Update: {
+          count?: number
+          day?: string
+          name?: string
+          users?: number
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           description: string | null
@@ -1576,6 +1629,37 @@ export type Database = {
       }
     }
     Functions: {
+      analytics_activity: {
+        Args: { p_days?: number }
+        Returns: {
+          active_users: number
+          avg_score: number
+          day: string
+          game_plays: number
+          kp_earned: number
+          kp_spent: number
+          signups: number
+        }[]
+      }
+      analytics_events: {
+        Args: { p_days?: number }
+        Returns: {
+          count: number
+          day: string
+          name: string
+          users: number
+        }[]
+      }
+      analytics_summary: {
+        Args: never
+        Returns: {
+          dau: number
+          mau: number
+          new_members_30d: number
+          total_members: number
+          wau: number
+        }[]
+      }
       campaign_stock: { Args: { p_campaign: string }; Returns: number }
       current_sponsor_id: { Args: never; Returns: string }
       delete_own_account: { Args: never; Returns: undefined }
@@ -1635,6 +1719,7 @@ export type Database = {
         Args: { p_note: string; p_redemption: string; p_staff: string }
         Returns: boolean
       }
+      rollup_app_events: { Args: never; Returns: undefined }
       scan_qr: { Args: { p_code: string }; Returns: number }
       win_campaign_gift: {
         Args: { p_campaign: string; p_context?: Json; p_kid?: string }
