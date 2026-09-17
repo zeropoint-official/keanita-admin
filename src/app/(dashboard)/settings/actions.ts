@@ -61,10 +61,18 @@ export async function inviteStaff(input: z.input<typeof inviteSchema>) {
       if (existingUid) {
         const { data: row, error: e0 } = await db.from('staff').select('id, role').eq('id', existingUid).maybeSingle();
         if (e0) throw e0;
-        if (row?.role === 'sponsor') throw new Error('Το email ανήκει σε λογαριασμό χορηγού — διαχειρίσου τον από τη σελίδα του χορηγού.');
-        if (row) throw new Error('Είναι ήδη μέλος του προσωπικού — άλλαξε τον ρόλο του από τη λίστα.');
-        const { error: e1 } = await db.from('staff').insert({ id: existingUid, role, full_name: fullName || null });
-        if (e1) throw e1;
+        if (row && row.role !== 'sponsor') throw new Error('Είναι ήδη μέλος του προσωπικού — άλλαξε τον ρόλο του από τη λίστα.');
+        if (row) {
+          // A sponsor-portal account being promoted to real staff: swap the
+          // role and detach the sponsor link so portal scoping stops applying.
+          const { error: e1 } = await db.from('staff')
+            .update({ role, sponsor_id: null, ...(fullName ? { full_name: fullName } : {}) })
+            .eq('id', existingUid);
+          if (e1) throw e1;
+        } else {
+          const { error: e1 } = await db.from('staff').insert({ id: existingUid, role, full_name: fullName || null });
+          if (e1) throw e1;
+        }
         // Existing app password keeps working; this email lets them (re)set one if needed.
         const { error: e2 } = await db.auth.resetPasswordForEmail(email, { redirectTo });
         if (e2) console.error('[staff.invite] reset email failed', e2.message);
