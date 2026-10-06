@@ -21,7 +21,9 @@ const STATUS_GR: Record<string, string> = { approved: 'εγκεκριμένα', 
 export function audienceSummary(a: Audience | Record<string, unknown> | null | undefined): string {
   if (!a || typeof a !== 'object') return 'Όλοι';
   const x = a as Audience & { kid_id?: string };
-  if (x.user_ids?.length) return x.kid_id ? '1 γονέας (γενέθλια)' : `${x.user_ids.length} συγκεκριμένοι χρήστες`;
+  // A birthday push goes to the one parent of the child who has the birthday —
+  // spell that out, "1 γονέας (γενέθλια)" read like the parent was celebrating.
+  if (x.user_ids?.length) return x.kid_id ? 'Γενέθλια παιδιού — προς τον γονέα του' : `${x.user_ids.length} συγκεκριμένοι χρήστες`;
   const parts: string[] = [];
   const min = x.kid_min_age, max = x.kid_max_age;
   if (min != null && max != null) parts.push(`ηλικία ${min}–${max}`);

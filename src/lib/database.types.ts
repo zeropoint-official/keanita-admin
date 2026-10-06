@@ -1678,6 +1678,37 @@ export type Database = {
       expire_awards: { Args: never; Returns: number }
       expire_kids: { Args: never; Returns: number }
       expire_points: { Args: never; Returns: number }
+      game_best_runs: {
+        Args: { p_game: string; p_period: string }
+        Returns: {
+          achieved_at: string
+          kid_id: string
+          score: number
+          user_id: string
+        }[]
+      }
+      game_display_name: {
+        Args: { p_kid: string; p_user: string }
+        Returns: string
+      }
+      game_leaderboard: {
+        Args: { p_game?: string; p_limit?: number; p_period?: string }
+        Returns: {
+          display_name: string
+          is_me: boolean
+          rank: number
+          score: number
+        }[]
+      }
+      game_my_rank: {
+        Args: { p_game?: string; p_period?: string }
+        Returns: {
+          rank: number
+          score: number
+          total: number
+        }[]
+      }
+      game_period_start: { Args: { p_period: string }; Returns: string }
       invoke_send_push: { Args: never; Returns: undefined }
       is_staff: {
         Args: { min_role?: Database["public"]["Enums"]["staff_role"] }
