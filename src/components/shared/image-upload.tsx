@@ -13,15 +13,18 @@ interface Props {
   accept?: string;                          // default images
   aspect?: string;                          // tailwind aspect class
   label?: string;
+  validate?: (file: File) => Promise<string | null>; // error message, or null to accept
 }
 
 /** Uploads directly to Supabase Storage (RLS: staff editor+) and returns "bucket/filename". */
-export function ImageUpload({ bucket, value, onChange, accept = 'image/*', aspect = 'aspect-video', label = 'Ανέβασε εικόνα' }: Props) {
+export function ImageUpload({ bucket, value, onChange, accept = 'image/*', aspect = 'aspect-video', label = 'Ανέβασε εικόνα', validate }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const isImage = accept.startsWith('image');
 
   async function upload(file: File) {
+    const invalid = await validate?.(file);
+    if (invalid) return toast.error(invalid);
     setBusy(true);
     const ext = file.name.split('.').pop()?.toLowerCase() ?? 'bin';
     const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
