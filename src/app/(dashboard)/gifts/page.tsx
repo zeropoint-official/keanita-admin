@@ -11,7 +11,7 @@ export default async function GiftsPage({ searchParams }: { searchParams: Promis
   const { tab } = await searchParams;
   const supabase = await createClient();
   const [{ data: gifts }, { data: redemptions }] = await Promise.all([
-    supabase.from('gifts').select('id, name, cost, category, emoji, image_url, stock, requires_approval, status, sort_order').order('sort_order').order('name'),
+    supabase.from('gifts').select('id, name, cost, category, emoji, image_url, stock, requires_approval, status, sort_order, item_key').order('sort_order').order('name'),
     supabase.from('redemptions')
       .select('id, status, cost, note, created_at, handled_at, gift:gifts(name, category, emoji), profile:profiles(firstname, lastname, mobile, email), kid:kids(first_name)')
       .order('created_at', { ascending: false }).limit(500),

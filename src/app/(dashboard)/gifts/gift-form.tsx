@@ -13,10 +13,9 @@ import { Field } from '@/components/shared/form-field';
 import { ImageUpload } from '@/components/shared/image-upload';
 import { ColorField } from '@/components/shared/color-field';
 import { saveGift, type GiftInput } from './actions';
+import { GIFT_KIND_LABEL, giftKind } from './gift-kind';
 
-// Mirrors nextjs-sample/lib/items.ts: an `outfit_*` gift with an image becomes
-// a wearable outfit in the app, and the image is the character sprite itself.
-const OUTFIT_PREFIX = 'outfit_';
+// An outfit's image is the character sprite itself (see nextjs-sample/lib/items.ts).
 const OUTFIT_W = 480;
 const OUTFIT_H = 416;
 
@@ -32,14 +31,18 @@ async function checkOutfitSprite(file: File): Promise<string | null> {
 
 const DEFAULTS: GiftInput = {
   name: '', description: '', cost: 100, category: 'digital', emoji: '🎁', image_url: null,
-  color: '#E60C10', bg_color: '#FFF0EE', stock: '', requires_approval: false, status: 'draft', sort_order: 0, item_key: '', consumable: false,
+  color: '#E60C10', bg_color: '#FFF0EE', stock: '', requires_approval: false, status: 'draft', sort_order: 0, kind: 'gift', consumable: false,
 };
 
 export function GiftForm({ id, initial }: { id: string | null; initial?: Partial<GiftInput> }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const { register, control, handleSubmit, formState: { errors } } = useForm<GiftInput>({ defaultValues: { ...DEFAULTS, ...initial } });
-  const isOutfit = (useWatch({ control, name: 'item_key' }) ?? '').trim().startsWith(OUTFIT_PREFIX);
+  // New gifts: staff pick the type. Saved gifts: it's fixed, derived from the stored key.
+  const savedKind = id ? giftKind(initial?.item_key) : null;
+  const pickedKind = useWatch({ control, name: 'kind' });
+  const kind = savedKind ?? pickedKind ?? 'gift';
+  const isOutfit = kind === 'outfit';
 
   const onSubmit = (values: GiftInput) => start(async () => {
     const r = await saveGift(id, values);
@@ -54,25 +57,47 @@ export function GiftForm({ id, initial }: { id: string | null; initial?: Partial
         <Card>
           <CardHeader><CardTitle>Βασικά στοιχεία</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Τύπος"
+              className="sm:col-span-2"
+              hint={
+                savedKind === 'system' ? 'Ενσωματωμένο αντικείμενο του παιχνιδιού — η εμφάνισή του ορίζεται μέσα στην εφαρμογή.'
+                : savedKind ? 'Ο τύπος δεν αλλάζει μετά την αποθήκευση, ώστε όσα παιδιά το έχουν να μην το χάσουν.'
+                : isOutfit ? 'Νέα εμφάνιση για τον ήρωα του παιχνιδιού — τα παιδιά την αγοράζουν με KP και τη φοράνε στο στούντιο.'
+                : 'Δώρο από τον κατάλογο που εξαργυρώνεται με KP.'
+              }
+            >
+              {savedKind ? (
+                <div className="flex h-9 items-center rounded-md border bg-muted px-3 text-sm">{GIFT_KIND_LABEL[savedKind]}</div>
+              ) : (
+                <Controller control={control} name="kind" render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gift">{GIFT_KIND_LABEL.gift}</SelectItem>
+                      <SelectItem value="outfit">{GIFT_KIND_LABEL.outfit}</SelectItem>
+                    </SelectContent>
+                  </Select>)} />
+              )}
+            </Field>
             <Field label="Όνομα" required error={errors.name?.message} className="sm:col-span-2"><Input {...register('name')} /></Field>
             <Field label="Κόστος (KP)" required error={errors.cost?.message}><Input type="number" min={0} {...register('cost')} /></Field>
-            <Field label="Κατηγορία">
-              <Controller control={control} name="category" render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="physical">Φυσικό</SelectItem><SelectItem value="digital">Ψηφιακό</SelectItem></SelectContent>
-                </Select>)} />
-            </Field>
-            <Field label="Emoji" hint="Εμφανίζεται όταν δεν υπάρχει εικόνα"><Input {...register('emoji')} /></Field>
+            {!isOutfit && (
+              <Field label="Κατηγορία">
+                <Controller control={control} name="category" render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="physical">Φυσικό</SelectItem><SelectItem value="digital">Ψηφιακό</SelectItem></SelectContent>
+                  </Select>)} />
+              </Field>
+            )}
+            {!isOutfit && <Field label="Emoji" hint="Εμφανίζεται όταν δεν υπάρχει εικόνα"><Input {...register('emoji')} /></Field>}
             <Field label="Κατάσταση">
               <Controller control={control} name="status" render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent><SelectItem value="draft">Πρόχειρο</SelectItem><SelectItem value="published">Δημοσιευμένο</SelectItem><SelectItem value="archived">Αρχείο</SelectItem></SelectContent>
                 </Select>)} />
-            </Field>
-            <Field label="Κωδικός στοιχείου εφαρμογής" hint="Συνδέει το δώρο με αντικείμενο μέσα στην εφαρμογή (π.χ. theme_night). Νέο ρούχο: γράψε outfit_ και ένα όνομα με λατινικά (π.χ. outfit_pirate) και ανέβασε την εικόνα του. Κενό = απλό δώρο." error={errors.item_key?.message} className="sm:col-span-2">
-              <Input {...register('item_key')} placeholder="π.χ. outfit_pirate" />
             </Field>
             <Field label="Περιγραφή" className="sm:col-span-2"><Textarea rows={4} {...register('description')} /></Field>
           </CardContent>
@@ -107,10 +132,14 @@ export function GiftForm({ id, initial }: { id: string | null; initial?: Partial
           <CardContent className="space-y-4">
             <Field label="Απόθεμα" hint="Κενό = απεριόριστο" error={errors.stock?.message}><Input type="number" min={0} {...register('stock')} /></Field>
             <Field label="Σειρά εμφάνισης"><Input type="number" {...register('sort_order')} /></Field>
-            <div className="flex items-center justify-between"><span className="text-sm">Απαιτεί έγκριση</span>
-              <Controller control={control} name="requires_approval" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
-            <div className="flex items-center justify-between"><span className="text-sm">Αναλώσιμο <span className="text-muted-foreground">(αγοράζεται ξανά)</span></span>
-              <Controller control={control} name="consumable" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
+            {!isOutfit && (
+              <>
+                <div className="flex items-center justify-between"><span className="text-sm">Απαιτεί έγκριση</span>
+                  <Controller control={control} name="requires_approval" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
+                <div className="flex items-center justify-between"><span className="text-sm">Αναλώσιμο <span className="text-muted-foreground">(αγοράζεται ξανά)</span></span>
+                  <Controller control={control} name="consumable" render={({ field }) => <Switch checked={!!field.value} onCheckedChange={field.onChange} />} /></div>
+              </>
+            )}
           </CardContent>
         </Card>
         <Button type="submit" disabled={pending} className="w-full bg-[#E60C10] hover:bg-[#c50a0d]">{pending ? 'Αποθήκευση…' : 'Αποθήκευση'}</Button>
