@@ -24,6 +24,8 @@ export async function updateSession(request: NextRequest) {
   // URL fragment and only exists client-side, so it must stay reachable
   // without a cookie session.
   const isLogin = path.startsWith('/login') || path.startsWith('/set-password');
+  // /p/* = public pages for app users (e.g. the signup-confirmation landing page).
+  if (path.startsWith('/p/')) return response;
 
   if (!user && !isLogin) {
     const url = request.nextUrl.clone();
