@@ -187,6 +187,30 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_attempts: {
+        Row: {
+          attempted_at: string
+          id: number
+          kind: string
+          mobile8: string
+          success: boolean
+        }
+        Insert: {
+          attempted_at?: string
+          id?: never
+          kind: string
+          mobile8: string
+          success: boolean
+        }
+        Update: {
+          attempted_at?: string
+          id?: never
+          kind?: string
+          mobile8?: string
+          success?: boolean
+        }
+        Relationships: []
+      }
       awards: {
         Row: {
           campaign_id: string
@@ -951,11 +975,41 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          created_at: string
+          emoji: string | null
+          key: string
+          name: string
+          plural_name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string | null
+          key: string
+          name: string
+          plural_name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string | null
+          key?: string
+          name?: string
+          plural_name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           accent_color: string
           bg_color: string
-          category: Database["public"]["Enums"]["product_category"]
+          category: string
           created_at: string
           description: string | null
           highlights: string[]
@@ -974,7 +1028,7 @@ export type Database = {
         Insert: {
           accent_color?: string
           bg_color?: string
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           description?: string | null
           highlights?: string[]
@@ -993,7 +1047,7 @@ export type Database = {
         Update: {
           accent_color?: string
           bg_color?: string
-          category?: Database["public"]["Enums"]["product_category"]
+          category?: string
           created_at?: string
           description?: string | null
           highlights?: string[]
@@ -1009,7 +1063,15 @@ export type Database = {
           tagline?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_category_fkey"
+            columns: ["category"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1673,6 +1735,7 @@ export type Database = {
         }
         Returns: number
       }
+      emails_for_mobile: { Args: { p_mobile: string }; Returns: string[] }
       enqueue_birthday_pushes: { Args: never; Returns: number }
       enqueue_event_pushes: { Args: never; Returns: number }
       expire_awards: { Args: never; Returns: number }
@@ -1714,6 +1777,11 @@ export type Database = {
         Args: { min_role?: Database["public"]["Enums"]["staff_role"] }
         Returns: boolean
       }
+      login_email_for_mobile: {
+        Args: { p_mobile: string; p_password: string }
+        Returns: string
+      }
+      normalize_mobile: { Args: { p: string }; Returns: string }
       points_balance: { Args: { p_user: string }; Returns: number }
       redeem_award: {
         Args: { p_award: string }
@@ -1811,7 +1879,6 @@ export type Database = {
         | "manual"
         | "birthday"
         | "expiry"
-      product_category: "juice" | "yogurt"
       quota_mode: "total" | "monthly" | "weekly"
       redemption_status:
         | "requested"
@@ -1988,7 +2055,6 @@ export const Constants = {
         "birthday",
         "expiry",
       ],
-      product_category: ["juice", "yogurt"],
       quota_mode: ["total", "monthly", "weekly"],
       redemption_status: [
         "requested",

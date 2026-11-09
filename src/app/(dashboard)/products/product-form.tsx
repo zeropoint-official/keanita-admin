@@ -19,7 +19,7 @@ const DEFAULTS: ProductInput = {
   serving_size: '', highlights: [], ingredients: [], nutrition: [], status: 'draft', sort_order: 0,
 };
 
-export function ProductForm({ id, initial }: { id: string | null; initial?: Partial<ProductInput> }) {
+export function ProductForm({ id, initial, categories }: { id: string | null; initial?: Partial<ProductInput>; categories: { key: string; name: string }[] }) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const { register, control, handleSubmit, formState: { errors } } = useForm<ProductInput>({ defaultValues: { ...DEFAULTS, ...initial } });
@@ -38,11 +38,11 @@ export function ProductForm({ id, initial }: { id: string | null; initial?: Part
           <CardHeader><CardTitle>Βασικά στοιχεία</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <Field label="Όνομα" required error={errors.name?.message} className="sm:col-span-2"><Input {...register('name')} /></Field>
-            <Field label="Κατηγορία">
+            <Field label="Κατηγορία" hint="Νέα κατηγορία; Προϊόντα → Κατηγορίες">
               <Controller control={control} name="category" render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent><SelectItem value="juice">Χυμός</SelectItem><SelectItem value="yogurt">Γιαούρτι</SelectItem></SelectContent>
+                  <SelectContent>{categories.map((c) => <SelectItem key={c.key} value={c.key}>{c.name}</SelectItem>)}</SelectContent>
                 </Select>)} />
             </Field>
             <Field label="Κατάσταση">

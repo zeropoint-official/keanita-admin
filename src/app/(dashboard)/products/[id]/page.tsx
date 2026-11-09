@@ -9,7 +9,10 @@ import type { ProductInput } from '../actions';
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data: product } = await supabase.from('products').select('*').eq('id', id).maybeSingle();
+  const [{ data: product }, { data: categories }] = await Promise.all([
+    supabase.from('products').select('*').eq('id', id).maybeSingle(),
+    supabase.from('product_categories').select('key, name').order('sort_order').order('name'),
+  ]);
   if (!product) notFound();
 
   const initial: Partial<ProductInput> = {
@@ -22,11 +25,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   return (
     <div>
       <PageHeader title={product.name} description={product.tagline ?? undefined}>
-        <StatusBadge value={product.category} />
         <StatusBadge value={product.status} />
         <ProductActions id={id} status={product.status} />
       </PageHeader>
-      <ProductForm id={id} initial={initial} />
+      <ProductForm id={id} initial={initial} categories={categories ?? []} />
     </div>
   );
 }

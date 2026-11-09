@@ -84,7 +84,10 @@ export function EventForm({ id, initial }: { id: string | null; initial?: Partia
         <Card>
           <CardHeader><CardTitle>Εικόνα</CardTitle></CardHeader>
           <CardContent>
-            <Controller control={control} name="image_url" render={({ field }) => <ImageUpload bucket="events" value={field.value} onChange={field.onChange} />} />
+            <Controller control={control} name="image_url" render={({ field }) => <ImageUpload bucket="events" aspect="aspect-[4/3]" value={field.value} onChange={field.onChange} />} />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Προτεινόμενο μέγεθος <b>1600 × 1200</b> (4:3). Η εφαρμογή δείχνει πάντα ολόκληρη την εικόνα — άλλα σχήματα δεν κόβονται, απλώς γεμίζει το κενό με θολό φόντο.
+            </p>
           </CardContent>
         </Card>
         <Card>
