@@ -33,10 +33,6 @@ const BIRTHDAY: SettingField[] = [
   { key: 'birthday_video_url', label: 'Βίντεο γενεθλίων', kind: 'file', accept: 'video/*', bucket: 'settings' },
   { key: 'intro_video_url', label: 'Εισαγωγικό βίντεο', kind: 'file', accept: 'video/*', bucket: 'settings' },
 ];
-const APP: SettingField[] = [
-  { key: 'min_app_version', label: 'Ελάχιστη έκδοση εφαρμογής', kind: 'text', placeholder: '1.0.0' },
-  { key: 'maintenance_mode', label: 'Λειτουργία συντήρησης', kind: 'switch', hint: 'Η εφαρμογή δείχνει μήνυμα συντήρησης σε όλα τα μέλη.' },
-];
 
 const PAGE_SLUGS = ['terms', 'about', 'privacy'];
 const PAGE_TITLES: Record<string, string> = { terms: 'Όροι χρήσης', about: 'Η ιστορία μας', privacy: 'Πολιτική απορρήτου' };
@@ -62,7 +58,6 @@ export default async function SettingsPage() {
           <TabsTrigger value="contact">Επικοινωνία</TabsTrigger>
           <TabsTrigger value="kids">Kids Club</TabsTrigger>
           <TabsTrigger value="birthday">Γενέθλια & Υπενθυμίσεις</TabsTrigger>
-          <TabsTrigger value="app">Εφαρμογή</TabsTrigger>
           <TabsTrigger value="pages">Σελίδες</TabsTrigger>
           <TabsTrigger value="staff">Προσωπικό</TabsTrigger>
           <TabsTrigger value="audit">Ιστορικό ενεργειών</TabsTrigger>
@@ -83,9 +78,6 @@ export default async function SettingsPage() {
             birthday_points: num(s, 'birthday_points', 0), event_reminder_days: num(s, 'event_reminder_days', 1),
             birthday_video_url: str(s, 'birthday_video_url'), intro_video_url: str(s, 'intro_video_url'),
           }} />
-        </TabsContent>
-        <TabsContent value="app">
-          <SettingsForm title="Εφαρμογή" fields={APP} initial={{ min_app_version: str(s, 'min_app_version'), maintenance_mode: bool(s, 'maintenance_mode') }} />
         </TabsContent>
         <TabsContent value="pages"><PagesTab pages={pageRows} /></TabsContent>
         <TabsContent value="staff"><StaffTab rows={(staff ?? []) as StaffRow[]} me={{ id: me.id, email: me.email }} isAdmin={me.role === 'admin'} /></TabsContent>
