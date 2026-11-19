@@ -81,6 +81,11 @@ type DB = SupabaseClient<Database>;
 /**
  * Build the filtered query. Returns a FRESH builder each call — supabase-js
  * builders mutate in place, so a shared one can't be ranged twice.
+ *
+ * Every sort ends with `id`: thousands of imported kids share one created_at
+ * (and dobs repeat), and with ties Postgres may order them differently on each
+ * page request — the table then repeats some kids and never shows others, and
+ * the chunked export duplicates/drops rows (seen: 314 of 6,000; 11 of 11,441).
  */
 export function buildKidsQuery(
   supabase: DB,
@@ -94,7 +99,7 @@ export function buildKidsQuery(
     const limit = new Date();
     limit.setFullYear(limit.getFullYear() - maxAge);
     limit.setMonth(limit.getMonth() + 3);   // turning max age within 3 months
-    b = b.eq('status', 'approved').lte('dob', localISO(limit)).order('dob');
+    b = b.eq('status', 'approved').lte('dob', localISO(limit)).order('dob').order('id');
   } else if (f.view === 'birthdays') {
     b = b.eq('status', 'approved');
 
@@ -108,10 +113,11 @@ export function buildKidsQuery(
     if (ranges.length) {
       b = b.or(ranges.map(([a, z]) => `and(dob.gte.${a},dob.lte.${z})`).join(','));
     }
-    b = b.order('dob');
+    b = b.order('dob').order('id');
   } else {
     const status = (['pending', 'approved', 'rejected', 'expired'].includes(f.view) ? f.view : 'pending') as KidStatus;
-    b = b.eq('status', status).order('created_at', { ascending: f.view !== 'pending' });
+    const ascending = f.view !== 'pending';
+    b = b.eq('status', status).order('created_at', { ascending }).order('id', { ascending });
   }
 
   if (f.q) {
