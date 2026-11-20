@@ -1,7 +1,11 @@
 // Sends queued push_campaigns via the Expo Push API and writes per-user inbox rows.
-// Invoked by pg_cron every minute (see 0008_push_cron.sql) or manually:
-//   curl -X POST https://<ref>.functions.supabase.co/send-push -H "Authorization: Bearer <service key>"
-// Env (function secrets): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY are injected automatically.
+// Invoked by pg_cron every minute through invoke_send_push() (0030_push_dispatch_secret.sql),
+// which sends the shared secret in the `x-dispatch-secret` header. Manual run:
+//   curl -X POST https://<ref>.functions.supabase.co/send-push -H "Authorization: Bearer <secret API key>"
+// Deployed with verify_jwt = false: the project uses the new (non-JWT) API keys, so the
+// function does its own check below and rejects everything else with 403.
+// Env (function secrets): SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY are injected automatically;
+// PUSH_DISPATCH_SECRET must equal the vault secret `push_dispatch_secret`.
 // EXPO_ACCESS_TOKEN is optional (higher rate limits / security if push security is enabled on the Expo account).
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
@@ -11,6 +15,11 @@ type Audience = {
 };
 
 const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+
+// `.in('id', [...])` puts every id in the request URL (~37 chars each). 100 ids
+// keeps the URL ~4 KB, well under the API gateway limit; 500 (~18 KB) could be
+// rejected and silently drop recipients on large broadcasts.
+const ID_CHUNK = 100;
 
 async function resolveRecipients(a: Audience): Promise<string[]> {
   if (a.user_ids?.length) return a.user_ids;
@@ -39,8 +48,8 @@ async function resolveRecipients(a: Audience): Promise<string[]> {
   if (ids !== null) {
     // targeted audiences must still respect deactivated accounts
     const list = [...ids]; const active: string[] = [];
-    for (let i = 0; i < list.length; i += 200) {
-      const { data } = await sb.from('profiles').select('id').eq('is_active', true).in('id', list.slice(i, i + 200));
+    for (let i = 0; i < list.length; i += ID_CHUNK) {
+      const { data } = await sb.from('profiles').select('id').eq('is_active', true).in('id', list.slice(i, i + ID_CHUNK));
       active.push(...(data ?? []).map((r) => r.id));
     }
     return active;
@@ -51,10 +60,24 @@ async function resolveRecipients(a: Audience): Promise<string[]> {
   return out;
 }
 
+/** Constant-time string comparison (empty never matches). */
+function safeEqual(a: string, b: string) {
+  if (!a || !b || a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+/** Only the cron dispatcher (shared secret) or someone holding the secret API key may trigger sends. */
+function authorized(req: Request) {
+  const dispatch = req.headers.get('x-dispatch-secret') ?? '';
+  const bearer = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
+  return safeEqual(dispatch, Deno.env.get('PUSH_DISPATCH_SECRET') ?? '') ||
+    safeEqual(bearer, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+}
+
 Deno.serve(async (req) => {
-  // only the service role (cron dispatcher) may trigger sends
-  const auth = req.headers.get('Authorization') ?? '';
-  if (auth !== `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`) {
+  if (!authorized(req)) {
     return new Response('forbidden', { status: 403 });
   }
   const { data: due } = await sb.from('push_campaigns').select('*').eq('status', 'scheduled').lte('scheduled_at', new Date().toISOString()).limit(5);
@@ -70,8 +93,9 @@ Deno.serve(async (req) => {
       for (let i = 0; i < inbox.length; i += 500) await sb.from('notifications').insert(inbox.slice(i, i + 500));
       // device tokens
       const tokens: string[] = [];
-      for (let i = 0; i < users.length; i += 500) {
-        const { data } = await sb.from('device_tokens').select('token').in('user_id', users.slice(i, i + 500));
+      for (let i = 0; i < users.length; i += ID_CHUNK) {
+        const { data, error } = await sb.from('device_tokens').select('token').in('user_id', users.slice(i, i + ID_CHUNK));
+        if (error) throw new Error(`device_tokens lookup: ${error.message}`);
         tokens.push(...(data ?? []).map((t) => t.token));
       }
       // expo push (chunks of 100)

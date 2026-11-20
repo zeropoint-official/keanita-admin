@@ -6,3 +6,9 @@ major_version = 17
 [db.seed]
 enabled = true
 sql_paths = []
+
+# send-push is called by pg_cron (invoke_send_push) with a shared secret header,
+# not a JWT: the project uses the new non-JWT API keys. The function rejects
+# anything without the secret (see its authorized()).
+[functions.send-push]
+verify_jwt = false
